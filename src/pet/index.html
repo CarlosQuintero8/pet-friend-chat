@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data: file:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>Michi</title>
+    <link rel="stylesheet" href="pet.css" />
+  </head>
+  <body>
+    <div class="stage" id="stage" data-state="idle">
+      <div class="bubble" id="bubble" aria-live="polite">
+        <div class="bubble-text" id="bubbleText"></div>
+        <div class="bubble-dots" id="bubbleDots"><span></span><span></span><span></span></div>
+        <button class="bubble-close" id="bubbleClose" title="Cerrar" data-no-click>×</button>
+      </div>
+
+      <div class="cat-wrap hit" id="catWrap" title="Michi — clic para hablar">
+        <div class="fx hearts" id="hearts" aria-hidden="true">
+          <span>♥</span><span>♥</span><span>♥</span>
+        </div>
+        <div class="fx zzz" id="zzz" aria-hidden="true">
+          <span>z</span><span>z</span><span>Z</span>
+        </div>
+        <div class="fx dust" id="dust" aria-hidden="true"><i></i><i></i></div>
+        <div class="cat-frames" id="catFrames" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <script src="pet.js"></script>
+  </body>
+</html>

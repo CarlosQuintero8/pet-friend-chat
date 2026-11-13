@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>Chat con Michi</title>
+    <link rel="stylesheet" href="chat.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <div class="app">
+        <header class="titlebar">
+          <div class="brand">
+            <div class="avatar">
+              <img src="../../assets/avatar.png" alt="" />
+              <span class="status-dot" id="statusDot"></span>
+            </div>
+            <div class="titles">
+              <div class="name" id="petName">Michi</div>
+              <div class="status" id="statusText">En línea</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="icon-btn" id="btnNew" title="Nueva conversación">＋</button>
+            <button class="icon-btn" id="btnSettings" title="Ajustes">⚙</button>
+            <button class="icon-btn" id="btnMin" title="Minimizar">–</button>
+            <button class="icon-btn close" id="btnClose" title="Ocultar chat">✕</button>
+          </div>
+        </header>
+
+        <main class="messages" id="messages">
+          <section class="welcome" id="welcome" hidden>
+            <img class="welcome-cat" src="../../assets/avatar.png" alt="Michi" />
+            <h1 id="welcomeTitle">¡Miau! Soy Michi</h1>
+            <p>
+              Vivo en tu escritorio y estoy aquí para lo que necesites: dudas, ideas,
+              charla o un chiste malo. Pregúntame lo que quieras.
+            </p>
+          </section>
+        </main>
+
+        <div class="suggestions" id="suggestions">
+          <button class="chip" data-suggest="Cuéntame algo curioso que no sepa">
+            <span>✨</span> Cuéntame algo curioso
+          </button>
+          <button class="chip" data-suggest="Dame una idea rápida para cenar esta noche">
+            <span>🍜</span> ¿Qué ceno hoy?
+          </button>
+          <button class="chip" data-suggest="Explícame una idea complicada de forma muy sencilla">
+            <span>💡</span> Explícame algo fácil
+          </button>
+          <button class="chip" data-suggest="Escríbeme un chiste corto de gatos">
+            <span>😹</span> Un chiste de gatos
+          </button>
+        </div>
+
+        <footer class="composer">
+          <div class="input-wrap">
+            <textarea
+              id="input"
+              rows="1"
+              maxlength="2000"
+              placeholder="Escríbele a Michi…"
+              aria-label="Escribe tu mensaje"
+            ></textarea>
+            <span class="enter-hint">Enter envía · Shift+Enter salto</span>
+          </div>
+          <button class="send" id="btnSend" title="Enviar mensaje (Enter)" aria-label="Enviar">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15 12 3.4 13.8Z" fill="currentColor" />
+            </svg>
+          </button>
+          <button class="send stop" id="btnStop" title="Detener respuesta" hidden>
+            <span></span>
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ------------------------------ Ajustes ------------------------------ -->
+    <div class="settings" id="settings" hidden>
+      <div class="settings-panel">
+        <header class="settings-header">
+          <div>
+            <h2>Ajustes</h2>
+            <p>Conecta tu IA y personaliza a tu mascota.</p>
+          </div>
+          <button class="icon-btn" id="btnSettingsClose" title="Cerrar ajustes">✕</button>
+        </header>
+
+        <div class="settings-body">
+          <div class="section-title">Conexión con la IA</div>
+
+          <label class="field">
+            <span>Proveedor</span>
+            <select id="fProvider">
+              <option value="gemini">Google Gemini</option>
+              <option value="openai">OpenAI</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="groq">Groq</option>
+              <option value="ollama">Ollama (local, gratis)</option>
+              <option value="custom">Otro compatible con OpenAI</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Clave de API</span>
+            <div class="password-wrap">
+              <input
+                id="fKey"
+                type="password"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="Pega aquí tu clave…"
+              />
+              <button type="button" id="btnToggleKey" class="ghost-mini">Ver</button>
+            </div>
+            <small id="keyHint">
+              Consigue una gratis en <b>aistudio.google.com/apikey</b>
+            </small>
+          </label>
+
+          <label class="field">
+            <span>Modelo</span>
+            <input id="fModel" list="modelList" spellcheck="false" />
+            <datalist id="modelList"></datalist>
+          </label>
+
+          <label class="field">
+            <span>URL base</span>
+            <input id="fBaseURL" spellcheck="false" />
+            <small>Se usa la ruta compatible con OpenAI (<code>/chat/completions</code>).</small>
+          </label>
+
+          <div class="row">
+            <button class="btn ghost" id="btnTest">Probar conexión</button>
+            <span class="test-result" id="testResult"></span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Tu mascota</div>
+
+          <label class="field">
+            <span>Nombre</span>
+            <input id="fName" maxlength="32" placeholder="Michi" />
+          </label>
+
+          <label class="field">
+            <span>Personalidad</span>
+            <input
+              id="fPersonality"
+              maxlength="300"
+              placeholder="dulce, juguetona y un poco tragona"
+            />
+            <small>
+              Ejemplos: «sarcástica pero cariñosa», «filósofa tranquila», «energía de cachorro».
+            </small>
+          </label>
+
+          <div class="switches">
+            <label class="switch">
+              <input type="checkbox" id="fAlwaysOnTop" />
+              <span class="track"></span>
+              <span class="switch-text">
+                <b>Siempre visible</b>
+                <small>El chat y la mascota quedan por encima de las ventanas.</small>
+              </span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="fWander" />
+              <span class="track"></span>
+              <span class="switch-text">
+                <b>Moverse sola</b>
+                <small>Michi pasea por el escritorio de vez en cuando.</small>
+              </span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="fComments" />
+              <span class="track"></span>
+              <span class="switch-text">
+                <b>Comentarios espontáneos</b>
+                <small>Suelta ocurrencias de vez en cuando mientras trabajas.</small>
+              </span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" id="fLaunch" />
+              <span class="track"></span>
+              <span class="switch-text">
+                <b>Iniciar con Windows</b>
+                <small id="launchHint">Michi se abre sola al encender el equipo.</small>
+              </span>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Privacidad</div>
+          <p class="privacy">
+            Tu clave de API y el historial se guardan solo en este equipo. Las conversaciones
+            se envían únicamente al proveedor de IA que elijas.
+          </p>
+          <div class="row">
+            <button class="btn ghost" id="btnDataFolder">Abrir carpeta de datos</button>
+          </div>
+
+          <div class="danger-zone">
+            <button class="btn danger" id="btnClear">Borrar conversación</button>
+            <button class="btn ghost" id="btnQuit">Salir de Michi</button>
+          </div>
+        </div>
+
+        <footer class="settings-footer">
+          <span class="save-note" id="saveNote"></span>
+          <button class="btn primary" id="btnSave">Guardar cambios</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="chat.js"></script>
+  </body>
+</html>

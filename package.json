@@ -1,0 +1,53 @@
+{
+  "name": "michi-desktop-pet",
+  "productName": "Michi",
+  "version": "1.0.0",
+  "description": "Michi: una gatita virtual para Windows que vive en tu escritorio y conversa contigo con IA.",
+  "main": "main.js",
+  "author": "Carlos",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "icons": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icons.ps1 && node scripts/make-icons.js",
+    "test:ai": "node scripts/test-ai.js",
+    "mock": "node scripts/mock-ai.js",
+    "dist": "electron-builder --win nsis",
+    "pack": "electron-builder --win dir"
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.carlos.michi",
+    "productName": "Michi",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Michi"
+    }
+  }
+}

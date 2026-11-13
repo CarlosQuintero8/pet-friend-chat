@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" aria-label="Gato negro y blanco tierno sentado, fotograma de animación">
+  <title>Gato esmoquin kawaii — fotograma</title>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 335 424 C 382 453, 431 439, 444 361" stroke="#070709" stroke-width="58"/>
+    <path d="M 335 424 C 382 453, 431 439, 444 361" stroke="#262629" stroke-width="48"/>
+    <path d="M 434 370 Q 441 365 444 361" stroke="#fffdf8" stroke-width="40"/>
+    </g>
+  <!-- Body and back legs -->
+  <path d="M 168 377 Q 120 382 137 452 Q 148 472 188 466 L 207 405" fill="#222124" stroke="#090909" stroke-width="7"/>
+  <path d="M 340 377 Q 389 385 376 453 Q 362 476 325 465 L 312 396" fill="#222124" stroke="#090909" stroke-width="7"/>
+  <ellipse cx="256" cy="379" rx="105" ry="104" fill="#232225" stroke="#090909" stroke-width="7"/>
+  <path d="M 218 300 Q 226 315 240 313 Q 232 331 246 334 Q 248 355 256 367 Q 268 347 271 333 Q 287 326 286 311 Q 296 310 297 299 C 316 359 313 417 256 442 C 199 414 191 352 218 300Z" fill="#fffdf7"/>
+  <ellipse cx="167" cy="455" rx="37" ry="22" fill="#fffdf8" stroke="#090909" stroke-width="6"/>
+  <ellipse cx="345" cy="455" rx="37" ry="22" fill="#fffdf8" stroke="#090909" stroke-width="6"/>
+  <path d="M 151 455 Q 149 471 157 475 M 168 455 Q 168 469 176 477 M 331 455 Q 332 469 340 477 M 348 455 Q 350 471 357 475" fill="none" stroke="#080808" stroke-width="3.5"/>
+  <path d="M 208 360 Q 210 411 215 466 L 235 469 L 243 375" fill="#222124" stroke="#08080a" stroke-width="6"/>
+          <path d="M 277 372 L 268 467 L 302 469 Q 305 408 306 367" fill="#222124" stroke="#08080a" stroke-width="6"/>
+          <ellipse cx="219" cy="469" rx="38" ry="23" fill="#fffdf8" stroke="#090909" stroke-width="6"/>
+          <ellipse cx="293" cy="469" rx="38" ry="23" fill="#fffdf8" stroke="#090909" stroke-width="6"/>
+          <path d="M 207 456 Q 199 471 206 484 M 222 458 Q 220 473 225 485 M 282 458 Q 276 473 283 485 M 298 459 Q 298 476 301 485" stroke="#090909" stroke-width="3.5" fill="none"/>
+  
+  <!-- Head, ears and facial features -->
+  <g transform="translate(0 0)">
+    <path d="M 122 174 Q 99 105 110 39 Q 117 7 142 28 L 208 90 Q 256 69 304 89 L 374 26 Q 396 12 402 40 Q 414 102 390 173" fill="#202023" stroke="#09090b" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M 130 121 Q 119 77 126 49 Q 132 45 149 65 L 187 108Z" fill="#f892a6"/>
+    <path d="M 325 107 L 372 63 Q 386 49 388 67 Q 389 98 379 124Z" fill="#f892a6"/>
+    <path d="M 257 105 C 169 82 108 138 103 213 C 96 259 120 300 154 315 Q 256 369 357 316 C 399 290 418 243 404 192 C 383 121 326 94 257 105Z" fill="#212124" stroke="#09090b" stroke-width="8"/>
+    <!-- forehead blaze -->
+    <path d="M 254 130 Q 235 184 212 198 Q 218 232 256 240 Q 290 227 298 194 Q 274 177 254 130Z" fill="#fffdf9"/>
+    <!-- white cheeks and muzzle -->
+    <path d="M 202 243 Q 165 234 145 261 Q 132 295 179 317 Q 212 333 256 322 Q 302 336 340 316 Q 382 291 365 259 Q 349 233 308 244 Q 283 256 256 252 Q 229 257 202 243Z" fill="#fffdf9"/>
+    <g transform="translate(185 208) scale(1 1.000)">
+           <ellipse cx="0" cy="0" rx="37" ry="50" fill="#fdfdfc" stroke="#090a0d" stroke-width="7"/>
+           <ellipse cx="5" cy="5" rx="25" ry="38" fill="#a8d960"/>
+           <ellipse cx="8" cy="2" rx="19" ry="31" fill="#050609"/>
+           <ellipse cx="-4" cy="-16" rx="10" ry="13" fill="#fff"/>
+           <circle cx="13" cy="4" r="4" fill="#fff"/>
+        </g><g transform="translate(327 208) scale(1 1.000)">
+           <ellipse cx="0" cy="0" rx="37" ry="50" fill="#fdfdfc" stroke="#090a0d" stroke-width="7"/>
+           <ellipse cx="5" cy="5" rx="25" ry="38" fill="#a8d960"/>
+           <ellipse cx="8" cy="2" rx="19" ry="31" fill="#050609"/>
+           <ellipse cx="-4" cy="-16" rx="10" ry="13" fill="#fff"/>
+           <circle cx="13" cy="4" r="4" fill="#fff"/>
+        </g>
+    <path d="M 256 255 C 239 249 235 256 240 266 Q 252 278 256 276 Q 269 268 273 258 Q 268 249 256 255Z" fill="#f991a2" stroke="#0c0b0e" stroke-width="4"/>
+    <path d="M 226 267 Q 240 288 256 264 Q 272 288 286 267" fill="none" stroke="#0c0b0d" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M 256 265 L 256 273" stroke="#0c0b0d" stroke-width="4" stroke-linecap="round"/>
+    <g stroke="#f7f7f7" stroke-width="4.5" stroke-linecap="round" fill="none">
+      <path d="M 143 260 Q 116 251 88 254 M 143 274 Q 113 273 85 286 M 147 289 Q 119 298 101 308"/>
+      <path d="M 368 260 Q 397 251 424 255 M 369 274 Q 400 274 428 286 M 365 289 Q 391 300 411 309"/>
+    </g>
+    <path d="M 140 151 Q 153 127 173 134 M 336 134 Q 354 129 367 153" stroke="#333235" stroke-width="7" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
