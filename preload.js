@@ -3,7 +3,6 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 const EVENTS = [
-  'pet:walk-stopped',
   'pet:dragging',
   'pet:react',
   'pet:sleep',
@@ -38,7 +37,6 @@ contextBridge.exposeInMainWorld('api', {
   openSettings: () => ipcRenderer.send('chat:open-settings'),
 
   /* Mascota */
-  walk: (direction) => ipcRenderer.invoke('pet:walk', direction),
   dragStart: (point) => ipcRenderer.send('pet:drag-start', point),
   dragMove: (point) => ipcRenderer.send('pet:drag-move', point),
   dragEnd: () => ipcRenderer.send('pet:drag-end'),

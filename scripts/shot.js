@@ -140,6 +140,20 @@ app.whenReady().then(async () => {
     query: { solid: '1' },
   })
   await wait(1200)
+
+  const settingsInfo = await chat.webContents.executeJavaScript(`(async () => {
+    document.getElementById('btnSettings').click();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return {
+      open: !document.getElementById('settings').hidden,
+      labels: Array.from(document.querySelectorAll('.switch-text b')).map((el) => el.textContent),
+      wanderExists: Boolean(document.getElementById('fWander')),
+      petName: document.getElementById('petName').textContent,
+      status: document.getElementById('statusText').textContent,
+    };
+  })()`)
+  console.log('SETTINGS INFO', JSON.stringify(settingsInfo, null, 2))
+
   const chatShot = await chat.webContents.capturePage()
   fs.writeFileSync(path.join(__dirname, '..', 'shot-chat.png'), chatShot.toPNG())
 

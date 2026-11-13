@@ -13,7 +13,6 @@ const host = window.api || {
       petName: 'Michi',
       personality: 'dulce, juguetona y un poco tragona',
       alwaysOnTop: true,
-      wander: true,
       comments: true,
       launchAtLogin: false,
     },
@@ -63,7 +62,6 @@ const form = {
   name: document.getElementById('fName'),
   personality: document.getElementById('fPersonality'),
   alwaysOnTop: document.getElementById('fAlwaysOnTop'),
-  wander: document.getElementById('fWander'),
   comments: document.getElementById('fComments'),
   launch: document.getElementById('fLaunch'),
 }
@@ -394,7 +392,6 @@ function fillSettingsForm() {
   form.name.value = cfg.petName || 'Michi'
   form.personality.value = cfg.personality || ''
   form.alwaysOnTop.checked = cfg.alwaysOnTop !== false
-  form.wander.checked = cfg.wander !== false
   form.comments.checked = cfg.comments !== false
   form.launch.checked = Boolean(cfg.launchAtLogin)
   form.launch.disabled = !state.isPackaged
@@ -423,7 +420,6 @@ function readSettingsForm() {
     petName: form.name.value.trim() || 'Michi',
     personality: form.personality.value.trim(),
     alwaysOnTop: form.alwaysOnTop.checked,
-    wander: form.wander.checked,
     comments: form.comments.checked,
     launchAtLogin: form.launch.checked,
   }

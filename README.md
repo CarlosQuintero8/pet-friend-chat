@@ -1,7 +1,7 @@
 # Michi 🐾
 
 Michi es una mascota virtual para Windows: un gato esmoquin kawaii que vive en tu
-escritorio, se mueve, parpadea, mueve la cola y te saluda con la patita. Haz clic en él
+escritorio, parpadea, mueve la cola y te saluda con la patita. Haz clic en él
 para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
 
 ![Michi](assets/vista_previa.png)
@@ -10,12 +10,13 @@ para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con Ope
 
 - **Mascota animada** con fotogramas vectoriales: cola en movimiento, parpadeo y saludo.
 - **Tamaño compacto** (la mitad que la versión inicial): 116 px de gato.
-- **Se mueve sola** por el escritorio cada cierto tiempo y duerme si la dejas tranquila.
+- **Se queda donde la dejes**: sin paseos automáticos por el escritorio, pero sigue
+  parpadeando, moviendo la cola y saludando. Duerme si la dejas tranquila.
 - **Arrástrala a cualquier posición**, incluso entre monitores. La posición se recuerda.
 - **Chat con IA** con respuestas en streaming, historial persistente y personalidad configurable.
 - **Burbuja de diálogo** para leer sus respuestas sin abrir el chat.
 - **Bandeja del sistema**, atajos globales e inicio automático con Windows.
-- **Modo tarjeta** automático en equipos sin transparencia (GPU desactivada, escritorio remoto…).
+- **Modo silueta** automático: la ventana se recorta al gato y a la burbuja, sin fondo.
 
 ## Requisitos
 
@@ -39,7 +40,7 @@ guarda.
 | Acción | Cómo |
 | --- | --- |
 | Hablar con Michi | Clic en el gato (o doble clic en la bandeja) |
-| Moverla | Arrastra el gato o cualquier punto de la tarjeta |
+| Moverla | Arrastra el gato o la burbuja |
 | Acariciarla | Doble clic en el gato |
 | Menú rápido | Clic derecho sobre la mascota o la bandeja |
 | Abrir/cerrar chat | `Ctrl + Shift + Espacio` |
@@ -71,20 +72,19 @@ equipo**, en `%APPDATA%\Michi\`:
 
 ## Modo silueta y transparencia
 
-En condiciones normales Michi flota sobre el escritorio con fondo transparente y sombra suave.
-Si Windows no permite composición con transparencia (por ejemplo, en escritorio remoto o con
-la GPU desactivada), la app lo detecta y **recorta la ventana con la silueta exacta del gato y
-la burbuja**: no hay tarjeta ni fondo, y todo lo que rodea al gato es click-through. El chat
-sigue siendo una ventana normal.
+Michi usa por defecto el **modo silueta**: la ventana se recorta con la forma exacta del
+gato y la burbuja, así que no hay fondo visible y todo lo que rodea al gato es click-through.
+El chat sigue siendo una ventana normal.
 
-Puedes forzar el modo manualmente:
+En algunos equipos la transparencia real de Windows funciona bien y se puede activar
+manualmente (fondo totalmente transparente y sombra suave):
 
 ```bash
-npm start -- --solid        # silueta recortada (sin transparencia real)
-npm start -- --transparent  # fondo transparente
+npm start -- --transparent  # transparencia real (opcional)
+npm start -- --solid        # forzar silueta recortada
 ```
 
-También con la variable de entorno `MICHI_SOLID=1` o `MICHI_SOLID=0`.
+También con la variable de entorno `MICHI_SOLID=1` (silueta) o `MICHI_SOLID=0` (transparente).
 
 ## Crear el instalador
 

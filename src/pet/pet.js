@@ -14,10 +14,9 @@ if (SOLID) document.documentElement.classList.add('solid')
 
 const host = window.api || {
   bootstrap: async () => ({
-    config: { petName: 'Michi', wander: false, comments: false },
+    config: { petName: 'Michi', comments: false },
     history: [],
   }),
-  walk: async () => ({ ok: false }),
   dragStart() {},
   dragMove() {},
   dragEnd() {},
@@ -374,7 +373,7 @@ window.__michiShape = () => {
 
 /* -------------------------------- Estado ---------------------------------- */
 
-let config = { petName: 'Michi', wander: true, comments: true }
+let config = { petName: 'Michi', comments: true }
 let state = 'idle'
 let busy = false
 let dragging = false
@@ -576,22 +575,6 @@ function headShake() {
   setTimeout(() => stage.classList.remove('twitch'), 540)
 }
 
-async function wander() {
-  if (!config.wander || busy || dragging || sleeping || state === 'walk') return
-  lastInteraction = Date.now()
-  const first = Math.random() < 0.5 ? -1 : 1
-  setState('walk')
-  let res = await host.walk(first)
-  if (!res || !res.ok) {
-    res = await host.walk(-first)
-    if (!res || !res.ok) {
-      setState('idle')
-      return
-    }
-  }
-  // main avisará con 'pet:walk-stopped' al terminar.
-}
-
 function scheduleAction(delay) {
   clearTimeout(actionTimer)
   actionTimer = setTimeout(() => {
@@ -605,11 +588,9 @@ function runAction() {
   if (bubble.classList.contains('show')) return
 
   const roll = Math.random()
-  if (config.wander && roll < 0.44) {
-    wander()
-  } else if (roll < 0.64) {
+  if (roll < 0.55) {
     flashState('happy', 2000)
-  } else if (roll < 0.76) {
+  } else if (roll < 0.75) {
     headShake()
     flashState('surprised', 1400)
   } else if (roll < 0.9) {
@@ -829,11 +810,6 @@ host.on('chat:focus', () => {
   lastInteraction = Date.now()
 })
 
-host.on('pet:walk-stopped', () => {
-  if (state === 'walk') setState(sleeping ? 'sleep' : 'idle')
-  lastInteraction = Date.now()
-})
-
 host.on('pet:react', (kind) => {
   if (kind === 'love') reactLove()
   else if (kind === 'sleep') enterSleep()
@@ -844,7 +820,6 @@ host.on('pet:sleep', () => enterSleep())
 
 host.on('config:changed', (next) => {
   config = { ...config, ...next }
-  if (!config.wander && state === 'walk') setState('idle')
 })
 
 host.on('pet:dragging', (isDragging) => {

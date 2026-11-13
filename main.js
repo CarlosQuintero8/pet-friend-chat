@@ -19,8 +19,8 @@ const { streamChat, testConnection } = require('./src/main/ai')
 
 /* ------------------------------- Constantes ------------------------------- */
 
-const PET_W = 260
-const PET_H = 280
+const PET_W = 248
+const PET_H = 254
 const CHAT_W = 440
 const CHAT_H = 640
 const MAX_HISTORY = 40
@@ -38,7 +38,6 @@ const DEFAULT_CONFIG = {
   personality: 'dulce, juguetona y un poco tragona',
   temperature: 0.85,
   alwaysOnTop: true,
-  wander: true,
   comments: true,
   launchAtLogin: false,
   petPosition: null,
@@ -52,7 +51,6 @@ const PUBLIC_KEYS = [
   'personality',
   'temperature',
   'alwaysOnTop',
-  'wander',
   'comments',
   'launchAtLogin',
   'petPosition',
@@ -66,7 +64,6 @@ let petWindow = null
 let chatWindow = null
 let tray = null
 let dragState = null
-let walkTimer = null
 let activeRequest = null
 let chatPositioned = false
 let quitting = false
@@ -87,12 +84,10 @@ function detectSolidMode() {
   if (process.env.MICHI_SOLID === '0') return false
   if (process.argv.includes('--solid')) return true
   if (process.argv.includes('--transparent')) return false
-  try {
-    const status = app.getGPUFeatureStatus()
-    return status.gpu_compositing !== 'enabled'
-  } catch {
-    return true
-  }
+  // En algunos equipos Windows pinta la ventana transparente como un rectángulo
+  // negro. El modo silueta recorta la ventana al gato y siempre se ve bien.
+  // El modo transparente real queda disponible con `--transparent`.
+  return true
 }
 
 function roundedRectRects(width, height, radius) {
@@ -169,7 +164,6 @@ function sanitizeConfig(next) {
     personality: String(merged.personality || DEFAULT_CONFIG.personality).trim().slice(0, 300),
     temperature: clamp(Number(merged.temperature) || 0.85, 0, 1.4),
     alwaysOnTop: Boolean(merged.alwaysOnTop),
-    wander: Boolean(merged.wander),
     comments: Boolean(merged.comments),
     launchAtLogin: Boolean(merged.launchAtLogin),
     petPosition:
@@ -523,70 +517,13 @@ function togglePet() {
   refreshTrayMenu()
 }
 
-/* --------------------------------- Paseos --------------------------------- */
-
-function stopWalk() {
-  if (walkTimer) {
-    clearInterval(walkTimer)
-    walkTimer = null
-  }
-}
+/* ------------------------------- Posición --------------------------------- */
 
 function savePetPosition() {
   if (!petWindow) return
   const [x, y] = petWindow.getPosition()
   config.petPosition = { x, y }
   saveConfig()
-}
-
-function walk(direction) {
-  if (!petWindow || walkTimer) return { ok: false }
-  const bounds = petWindow.getBounds()
-  const display = screen.getDisplayMatching(bounds)
-  const wa = display.workArea
-  const minX = wa.x + 4
-  const maxX = wa.x + wa.width - bounds.width - 4
-  const y = clamp(bounds.y, wa.y - 10, wa.y + wa.height - bounds.height + 10)
-
-  if (maxX <= minX) return { ok: false }
-
-  const step = 90 + Math.random() * 190
-  const dir = direction === -1 ? -1 : 1
-  let target = clamp(bounds.x + step * dir, minX, maxX)
-
-  // Si ya está en el borde, da media vuelta.
-  if (Math.abs(target - bounds.x) < 24) {
-    target = clamp(bounds.x - step * dir, minX, maxX)
-  }
-  const distance = Math.abs(target - bounds.x)
-  if (distance < 24) {
-    petWindow.webContents.send('pet:walk-stopped', 'blocked')
-    return { ok: false }
-  }
-
-  const startX = bounds.x
-  const startTime = Date.now()
-  const speed = 105 + Math.random() * 45 // px/s
-  const duration = Math.max(700, (distance / speed) * 1000)
-
-  walkTimer = setInterval(() => {
-    if (!petWindow) {
-      stopWalk()
-      return
-    }
-    const t = Math.min(1, (Date.now() - startTime) / duration)
-    const eased = t * t * (3 - 2 * t) * 0.35 + t * 0.65 // arranque/parada suaves
-    const x = Math.round(startX + (target - startX) * eased)
-    petWindow.setBounds({ x, y: Math.round(y), width: PET_W, height: PET_H })
-    if (t >= 1) {
-      stopWalk()
-      savePetPosition()
-      petWindow.webContents.send('pet:walk-stopped', 'done')
-      refreshTrayMenu()
-    }
-  }, 16)
-
-  return { ok: true, target: Math.round(target) }
 }
 
 /* ---------------------------------- Chat ---------------------------------- */
@@ -758,11 +695,8 @@ function registerIpc() {
     }
   })
 
-  ipcMain.handle('pet:walk', (event, direction) => walk(direction))
-
   ipcMain.on('pet:drag-start', (event, point) => {
     if (!petWindow || !point) return
-    stopWalk()
     petWindow.moveTop()
     const bounds = petWindow.getBounds()
     dragState = {
@@ -832,16 +766,28 @@ function registerIpc() {
       })
     }
     if (!clean.length) return
-    try {
-      petWindow.setShape(clean)
-    } catch (error) {
-      console.error('No se pudo aplicar la silueta de la mascota', error)
-    }
+    const wasShown = petShown
     if (!petShown) {
       petShown = true
       petWindow.showInactive()
       petWindow.moveTop()
       refreshTrayMenu()
+    }
+    try {
+      petWindow.setShape(clean)
+    } catch (error) {
+      console.error('No se pudo aplicar la silueta de la mascota', error)
+    }
+    if (!wasShown) {
+      // En Windows el recorte debe aplicarse con la ventana ya visible.
+      setTimeout(() => {
+        if (!petWindow) return
+        try {
+          petWindow.setShape(clean)
+        } catch {
+          /* nada */
+        }
+      }, 60)
     }
   })
 
@@ -944,7 +890,6 @@ if (!gotLock) {
 
   app.on('will-quit', () => {
     globalShortcut.unregisterAll()
-    if (walkTimer) clearInterval(walkTimer)
   })
 
   app.on('before-quit', () => {
