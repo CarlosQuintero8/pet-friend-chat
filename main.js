@@ -84,10 +84,15 @@ function detectSolidMode() {
   if (process.env.MICHI_SOLID === '0') return false
   if (process.argv.includes('--solid')) return true
   if (process.argv.includes('--transparent')) return false
-  // En algunos equipos Windows pinta la ventana transparente como un rectángulo
-  // negro. El modo silueta recorta la ventana al gato y siempre se ve bien.
-  // El modo transparente real queda disponible con `--transparent`.
-  return true
+  try {
+    const status = app.getGPUFeatureStatus()
+    const compositing = String(status?.gpu_compositing || '')
+    // La transparencia real de Electron necesita composición por GPU/DWM.
+    // Solo usamos la silueta recortada cuando sabemos que es por software.
+    return compositing === 'disabled_software' || compositing === 'unavailable_software'
+  } catch {
+    return false
+  }
 }
 
 function roundedRectRects(width, height, radius) {

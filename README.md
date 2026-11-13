@@ -16,7 +16,7 @@ para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con Ope
 - **Chat con IA** con respuestas en streaming, historial persistente y personalidad configurable.
 - **Burbuja de diálogo** para leer sus respuestas sin abrir el chat.
 - **Bandeja del sistema**, atajos globales e inicio automático con Windows.
-- **Modo silueta** automático: la ventana se recorta al gato y a la burbuja, sin fondo.
+- **Transparencia real automática**, con respaldo de silueta recortada si Windows no puede componerla.
 
 ## Requisitos
 
@@ -72,19 +72,20 @@ equipo**, en `%APPDATA%\Michi\`:
 
 ## Modo silueta y transparencia
 
-Michi usa por defecto el **modo silueta**: la ventana se recorta con la forma exacta del
-gato y la burbuja, así que no hay fondo visible y todo lo que rodea al gato es click-through.
-El chat sigue siendo una ventana normal.
+Al arrancar, Michi usa **transparencia real** si Windows tiene composición por GPU/DWM
+disponible: la mascota flota con bordes suaves y sombra, y el chat también es una ventana
+translúcida. Si detecta composición por software (por ejemplo, en un escritorio remoto o
+con la GPU desactivada), cambia automáticamente al **modo silueta**: recorta la ventana a la
+forma exacta del gato y la burbuja, sin fondo visible.
 
-En algunos equipos la transparencia real de Windows funciona bien y se puede activar
-manualmente (fondo totalmente transparente y sombra suave):
+También se puede forzar manualmente:
 
 ```bash
-npm start -- --transparent  # transparencia real (opcional)
+npm start -- --transparent  # forzar transparencia real
 npm start -- --solid        # forzar silueta recortada
 ```
 
-También con la variable de entorno `MICHI_SOLID=1` (silueta) o `MICHI_SOLID=0` (transparente).
+Con la variable de entorno `MICHI_SOLID=0` (transparente) o `MICHI_SOLID=1` (silueta).
 
 ## Crear el instalador
 
