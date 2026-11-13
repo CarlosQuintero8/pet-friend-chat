@@ -38,6 +38,7 @@ const DEFAULT_CONFIG = {
   personality: 'dulce, juguetona y un poco tragona',
   temperature: 0.85,
   alwaysOnTop: true,
+  windowMode: 'transparent',
   comments: true,
   launchAtLogin: false,
   petPosition: null,
@@ -51,6 +52,7 @@ const PUBLIC_KEYS = [
   'personality',
   'temperature',
   'alwaysOnTop',
+  'windowMode',
   'comments',
   'launchAtLogin',
   'petPosition',
@@ -84,15 +86,9 @@ function detectSolidMode() {
   if (process.env.MICHI_SOLID === '0') return false
   if (process.argv.includes('--solid')) return true
   if (process.argv.includes('--transparent')) return false
-  try {
-    const status = app.getGPUFeatureStatus()
-    const compositing = String(status?.gpu_compositing || '')
-    // La transparencia real de Electron necesita composición por GPU/DWM.
-    // Solo usamos la silueta recortada cuando sabemos que es por software.
-    return compositing === 'disabled_software' || compositing === 'unavailable_software'
-  } catch {
-    return false
-  }
+  // Transparencia real por defecto. Si el equipo no la soporta, se puede
+  // cambiar a la silueta recortada desde Ajustes o desde la bandeja.
+  return config.windowMode === 'silhouette'
 }
 
 function roundedRectRects(width, height, radius) {
@@ -169,6 +165,7 @@ function sanitizeConfig(next) {
     personality: String(merged.personality || DEFAULT_CONFIG.personality).trim().slice(0, 300),
     temperature: clamp(Number(merged.temperature) || 0.85, 0, 1.4),
     alwaysOnTop: Boolean(merged.alwaysOnTop),
+    windowMode: merged.windowMode === 'silhouette' ? 'silhouette' : 'transparent',
     comments: Boolean(merged.comments),
     launchAtLogin: Boolean(merged.launchAtLogin),
     petPosition:
@@ -469,6 +466,12 @@ function refreshTrayMenu() {
     { type: 'separator' },
     { label: 'Ajustes…', click: () => openSettings() },
     {
+      label: 'Fondo transparente',
+      type: 'checkbox',
+      checked: config.windowMode === 'transparent',
+      click: (item) => setWindowMode(item.checked ? 'transparent' : 'silhouette'),
+    },
+    {
       label: 'Iniciar con Windows',
       type: 'checkbox',
       checked: config.launchAtLogin,
@@ -654,6 +657,22 @@ function quitApp() {
   app.quit()
 }
 
+function relaunchApp() {
+  const args = process.argv
+    .slice(1)
+    .filter((arg) => arg !== '--solid' && arg !== '--transparent')
+  app.relaunch({ args })
+  quitApp()
+}
+
+function setWindowMode(mode) {
+  const next = mode === 'silhouette' ? 'silhouette' : 'transparent'
+  if (config.windowMode === next) return
+  config.windowMode = next
+  saveConfig()
+  relaunchApp()
+}
+
 /* ---------------------------------- IPC ----------------------------------- */
 
 function registerIpc() {
@@ -671,11 +690,18 @@ function registerIpc() {
   })
 
   ipcMain.handle('config:save', (event, patch) => {
+    const previousMode = config.windowMode
     config = sanitizeConfig({ ...config, ...(patch || {}) })
     saveConfig()
     applyConfig()
     broadcast('config:changed', publicConfig())
-    return { ok: true, config: configForForm() }
+    const restartRequired = previousMode !== config.windowMode
+    if (restartRequired) {
+      setTimeout(() => {
+        if (!quitting) relaunchApp()
+      }, 900)
+    }
+    return { ok: true, config: configForForm(), restartRequired }
   })
 
   ipcMain.handle('config:test', async (event, form) => {
@@ -834,8 +860,8 @@ if (!gotLock) {
 
   app.whenReady().then(async () => {
     app.setAppUserModelId('com.carlos.michi')
-    SOLID = detectSolidMode()
     loadState()
+    SOLID = detectSolidMode()
     if (app.isPackaged) {
       app.setLoginItemSettings({ openAtLogin: config.launchAtLogin, path: process.execPath })
     }

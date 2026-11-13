@@ -13,6 +13,7 @@ const host = window.api || {
       petName: 'Michi',
       personality: 'dulce, juguetona y un poco tragona',
       alwaysOnTop: true,
+      windowMode: 'transparent',
       comments: true,
       launchAtLogin: false,
     },
@@ -62,6 +63,7 @@ const form = {
   name: document.getElementById('fName'),
   personality: document.getElementById('fPersonality'),
   alwaysOnTop: document.getElementById('fAlwaysOnTop'),
+  transparent: document.getElementById('fTransparent'),
   comments: document.getElementById('fComments'),
   launch: document.getElementById('fLaunch'),
 }
@@ -392,6 +394,7 @@ function fillSettingsForm() {
   form.name.value = cfg.petName || 'Michi'
   form.personality.value = cfg.personality || ''
   form.alwaysOnTop.checked = cfg.alwaysOnTop !== false
+  form.transparent.checked = cfg.windowMode !== 'silhouette'
   form.comments.checked = cfg.comments !== false
   form.launch.checked = Boolean(cfg.launchAtLogin)
   form.launch.disabled = !state.isPackaged
@@ -420,6 +423,7 @@ function readSettingsForm() {
     petName: form.name.value.trim() || 'Michi',
     personality: form.personality.value.trim(),
     alwaysOnTop: form.alwaysOnTop.checked,
+    windowMode: form.transparent.checked ? 'transparent' : 'silhouette',
     comments: form.comments.checked,
     launchAtLogin: form.launch.checked,
   }
@@ -592,6 +596,10 @@ document.getElementById('btnSave').addEventListener('click', async () => {
     if (result?.ok) {
       state.config = { ...state.config, ...(result.config || {}) }
       applyConfigToUi()
+      if (result.restartRequired) {
+        showSaveNote('Guardado. Reiniciando para aplicar el fondo…')
+        return
+      }
       showSaveNote('Guardado ✓')
       setTimeout(() => {
         if (!settingsEl.hidden) closeSettings()
