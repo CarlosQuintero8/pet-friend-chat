@@ -9,13 +9,13 @@ const fs = require('node:fs')
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 ipcMain.handle('asset:read-frame', (event, name, index) => {
-  const prefixes = { tail: 'cola', blink: 'parpadeo', wave: 'saludo' }
-  const prefix = prefixes[name]
+  const folders = { tail: '03_cola', blink: '01_parpadeo', wave: '02_saludo' }
+  const folder = folders[name]
   const number = Number(index) + 1
-  if (!prefix || !Number.isInteger(number) || number < 1 || number > 6) return ''
+  if (!folder || !Number.isInteger(number) || number < 1 || number > 6) return ''
   try {
     return fs.readFileSync(
-      path.join(__dirname, '..', 'assets', 'gato-pixel', `${prefix}_0${number}.svg`),
+      path.join(__dirname, '..', 'assets', folder, `fotograma_0${number}.svg`),
       'utf8',
     )
   } catch {

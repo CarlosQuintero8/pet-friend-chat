@@ -1,4 +1,4 @@
-# Genera avatar e iconos de Michi a partir del gato pixel de assets/gato-pixel.
+# Genera avatar e iconos de Michi a partir del PNG original.
 # Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icons.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -6,23 +6,21 @@ Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent $PSScriptRoot
 $assets = Join-Path $root 'assets'
-$sourceFile = Join-Path $assets 'gato-pixel\reference.png'
-if (-not (Test-Path -LiteralPath $sourceFile)) {
-  throw 'No se encuentra assets\gato-pixel\reference.png'
-}
+$sourceFile = Get-ChildItem $assets -Filter 'Gato esmoquin*.png' | Select-Object -First 1
+if (-not $sourceFile) { throw 'No se encuentra el PNG del gato en assets' }
 
-$source = [System.Drawing.Image]::FromFile($sourceFile)
-Write-Output "Origen: gato-pixel\reference.png $($source.Width)x$($source.Height)"
+$source = [System.Drawing.Image]::FromFile($sourceFile.FullName)
+Write-Output "Origen: $($sourceFile.Name) $($source.Width)x$($source.Height)"
 
-# Recorte del rostro en la referencia de 236x216.
-$crop = New-Object System.Drawing.Rectangle 28, 0, 180, 180
+# Recorte del rostro (coordenadas sobre la imagen 1254x1254).
+$crop = New-Object System.Drawing.Rectangle 240, 30, 800, 800
 
 function New-Canvas([int]$size) {
   $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
   $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-  $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
-  $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::Half
+  $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
   $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
   $g.Clear([System.Drawing.Color]::Transparent)
   return @($bmp, $g)
@@ -52,9 +50,8 @@ function Save-Icon([string]$file, [int]$size) {
   $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::FromArgb(255, 242, 211, 180), $penWidth)
   $g.DrawEllipse($pen, $disk.X + $penWidth / 2, $disk.Y + $penWidth / 2, $disk.Width - $penWidth, $disk.Height - $penWidth)
 
-  $inner = [int](18 * $scale)
-  $top = [int](10 * $scale)
-  $dest = New-Object System.Drawing.Rectangle $inner, $top, ($size - 2 * $inner), ($size - 2 * $inner)
+  $inner = [int](22 * $scale)
+  $dest = New-Object System.Drawing.Rectangle $inner, ([int](12 * $scale)), ($size - 2 * $inner), ($size - 2 * $inner)
   $g.DrawImage($source, $dest, $crop, [System.Drawing.GraphicsUnit]::Pixel)
 
   $brush.Dispose(); $pen.Dispose()

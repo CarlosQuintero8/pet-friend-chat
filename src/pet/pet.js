@@ -30,11 +30,11 @@ const host = window.api || {
 
 /* ------------------------------- Fotogramas -------------------------------- */
 
-const FRAME_BASE = '../../assets/gato-pixel'
+const FRAME_BASE = '../../assets'
 const FRAMES = {
-  tail: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/cola_0${i + 1}.svg`),
-  blink: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/parpadeo_0${i + 1}.svg`),
-  wave: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/saludo_0${i + 1}.svg`),
+  tail: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/03_cola/fotograma_0${i + 1}.svg`),
+  blink: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/01_parpadeo/fotograma_0${i + 1}.svg`),
+  wave: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/02_saludo/fotograma_0${i + 1}.svg`),
 }
 
 const TAIL_FRAME_MS = 230

@@ -827,11 +827,11 @@ function registerIpc() {
   })
 
   ipcMain.handle('asset:read-frame', async (event, name, index) => {
-    const prefixes = { tail: 'cola', blink: 'parpadeo', wave: 'saludo' }
-    const prefix = prefixes[name]
+    const folders = { tail: '03_cola', blink: '01_parpadeo', wave: '02_saludo' }
+    const folder = folders[name]
     const number = Number(index) + 1
-    if (!prefix || !Number.isInteger(number) || number < 1 || number > 6) return ''
-    const file = path.join(__dirname, 'assets', 'gato-pixel', `${prefix}_0${number}.svg`)
+    if (!folder || !Number.isInteger(number) || number < 1 || number > 6) return ''
+    const file = path.join(__dirname, 'assets', folder, `fotograma_0${number}.svg`)
     try {
       return await fs.promises.readFile(file, 'utf8')
     } catch {

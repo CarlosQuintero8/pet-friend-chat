@@ -1,15 +1,15 @@
 # Michi 🐾
 
-Michi es una mascota virtual para Windows: un gato pixel art que vive en tu
+Michi es una mascota virtual para Windows: un gato esmoquin kawaii que vive en tu
 escritorio, parpadea, mueve la cola y te saluda con la patita. Haz clic en él
 para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
 
-![Michi](assets/gato-pixel/reference.png)
+![Michi](assets/vista_previa.png)
 
 ## Qué incluye
 
-- **Mascota pixel art** con fotogramas: cola en movimiento, parpadeo y saludo.
-- **Tamaño compacto**: 118 px de ancho.
+- **Mascota animada** con fotogramas vectoriales: cola en movimiento, parpadeo y saludo.
+- **Tamaño compacto**: 116 px de gato.
 - **Se queda donde la dejes**: sin paseos automáticos por el escritorio, pero sigue
   parpadeando, moviendo la cola y saludando. Duerme si la dejas tranquila.
 - **Arrástrala a cualquier posición**, incluso entre monitores. La posición se recuerda.
@@ -126,7 +126,7 @@ npm run dist    # instalador NSIS en dist/
 npm run pack    # versión sin instalador en dist/win-unpacked/
 ```
 
-El icono y el avatar se generan a partir de la referencia del gato pixel:
+El icono y el avatar se generan a partir del PNG original del gato:
 
 ```bash
 npm run icons
@@ -140,8 +140,9 @@ preload.js              Puente seguro entre Electron y las interfaces
 src/main/ai.js          Cliente OpenAI-compatible con streaming
 src/pet/                Ventana de la mascota (HTML/CSS/JS + motor de fotogramas)
 src/chat/               Chat, ajustes y avatares
-assets/gato-pixel/       Fotogramas pixel art (cola, parpadeo y saludo)
-assets/gato-pixel/referencia_fiel/  Referencia de alta fidelidad (no se empaqueta)
+assets/01_parpadeo/     Fotogramas del parpadeo
+assets/02_saludo/       Fotogramas del saludo con la patita
+assets/03_cola/         Fotogramas del movimiento de cola
 assets/avatar.png       Avatar para el chat
 assets/icon.png/.ico    Icono de la aplicación
 .github/workflows/      Publicación automática de releases
