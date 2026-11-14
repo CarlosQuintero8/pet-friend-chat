@@ -165,8 +165,8 @@ body {
 
 .cat-wrap {
   position: relative;
-  width: 116px;
-  height: 116px;
+  width: 118px;
+  height: 108px;
   margin-bottom: 2px;
   pointer-events: auto;
   cursor: grab;
@@ -194,6 +194,7 @@ body {
   opacity: 0;
   pointer-events: none;
   -webkit-user-drag: none;
+  image-rendering: pixelated;
 }
 
 .cat-frames img.active {

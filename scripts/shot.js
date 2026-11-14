@@ -9,13 +9,13 @@ const fs = require('node:fs')
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 ipcMain.handle('asset:read-frame', (event, name, index) => {
-  const folders = { tail: '03_cola', blink: '01_parpadeo', wave: '02_saludo' }
-  const folder = folders[name]
+  const prefixes = { tail: 'cola', blink: 'parpadeo', wave: 'saludo' }
+  const prefix = prefixes[name]
   const number = Number(index) + 1
-  if (!folder || !Number.isInteger(number) || number < 1 || number > 6) return ''
+  if (!prefix || !Number.isInteger(number) || number < 1 || number > 6) return ''
   try {
     return fs.readFileSync(
-      path.join(__dirname, '..', 'assets', folder, `fotograma_0${number}.svg`),
+      path.join(__dirname, '..', 'assets', 'gato-pixel', `${prefix}_0${number}.svg`),
       'utf8',
     )
   } catch {
@@ -32,20 +32,20 @@ ipcMain.handle('app:bootstrap', () => ({
     petName: 'Michi',
     personality: 'dulce, juguetona y un poco tragona',
     alwaysOnTop: true,
-    wander: true,
+    windowMode: 'transparent',
     comments: true,
     launchAtLogin: false,
   },
   history: [],
   isPackaged: false,
   solid: true,
-  version: '1.0.0',
+  version: '1.2.0',
 }))
 
 app.whenReady().then(async () => {
   const pet = new BrowserWindow({
-    width: 260,
-    height: 280,
+    width: 248,
+    height: 254,
     show: false,
     frame: false,
     transparent: true,

@@ -15,6 +15,7 @@ const EVENTS = [
   'chat:opened',
   'chat:open-settings',
   'config:changed',
+  'update:state',
 ]
 
 contextBridge.exposeInMainWorld('api', {
@@ -30,6 +31,9 @@ contextBridge.exposeInMainWorld('api', {
   sendChat: (text) => ipcRenderer.invoke('chat:send', text),
   stopChat: () => ipcRenderer.invoke('chat:stop'),
   clearChat: () => ipcRenderer.invoke('chat:clear'),
+  checkUpdates: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
   openChat: () => ipcRenderer.send('chat:open'),
   toggleChat: () => ipcRenderer.send('chat:toggle'),
   hideChat: () => ipcRenderer.send('chat:hide'),

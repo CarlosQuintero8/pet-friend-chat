@@ -1,15 +1,15 @@
 # Michi 🐾
 
-Michi es una mascota virtual para Windows: un gato esmoquin kawaii que vive en tu
+Michi es una mascota virtual para Windows: un gato pixel art que vive en tu
 escritorio, parpadea, mueve la cola y te saluda con la patita. Haz clic en él
 para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
 
-![Michi](assets/vista_previa.png)
+![Michi](assets/gato-pixel/reference.png)
 
 ## Qué incluye
 
-- **Mascota animada** con fotogramas vectoriales: cola en movimiento, parpadeo y saludo.
-- **Tamaño compacto** (la mitad que la versión inicial): 116 px de gato.
+- **Mascota pixel art** con fotogramas: cola en movimiento, parpadeo y saludo.
+- **Tamaño compacto**: 118 px de ancho.
 - **Se queda donde la dejes**: sin paseos automáticos por el escritorio, pero sigue
   parpadeando, moviendo la cola y saludando. Duerme si la dejas tranquila.
 - **Arrástrala a cualquier posición**, incluso entre monitores. La posición se recuerda.
@@ -17,6 +17,7 @@ para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con Ope
 - **Burbuja de diálogo** para leer sus respuestas sin abrir el chat.
 - **Bandeja del sistema**, atajos globales e inicio automático con Windows.
 - **Transparencia real por defecto**, con interruptor para usar la silueta recortada.
+- **Buscador de actualizaciones** en Ajustes, con descarga e instalación desde GitHub.
 
 ## Requisitos
 
@@ -86,6 +87,38 @@ npm start -- --solid        # forzar silueta recortada
 
 Con la variable de entorno `MICHI_SOLID=0` (transparente) o `MICHI_SOLID=1` (silueta).
 
+## Actualizaciones
+
+La app incluye **Ajustes → Actualizaciones → Buscar actualizaciones**. El botón consulta
+los GitHub Releases del repositorio, muestra la versión disponible y permite descargarla
+e instalarla sin salir de Michi. El estado se muestra con progreso y avisos de error.
+
+El flujo de publicación está automatizado con **GitHub Actions**
+(`.github/workflows/release.yml`):
+
+1. Sube la versión en `package.json` (por ejemplo, `1.2.1`).
+2. Haz commit y push a `main`.
+3. Crea y sube el tag de esa versión:
+   ```bash
+   git tag v1.2.1
+   git push origin v1.2.1
+   ```
+4. El workflow compila con `electron-builder --publish always` y publica el **Release**
+   con el instalador, `latest.yml` y el `.blockmap`.
+5. La app instalada ya puede encontrar y aplicar la actualización desde Ajustes.
+
+La primera versión con el actualizador (1.2.0) hay que instalarla manualmente; a partir de
+ahí el botón funciona para las siguientes. También se puede publicar manualmente con un
+token de GitHub:
+
+```bash
+set GH_TOKEN=tu_token
+npm run dist -- --publish always
+```
+
+El instalador no está firmado con un certificado de código, así que Windows puede mostrar
+avisos de SmartScreen. Para distribución pública conviene firmarlo.
+
 ## Crear el instalador
 
 ```bash
@@ -93,7 +126,7 @@ npm run dist    # instalador NSIS en dist/
 npm run pack    # versión sin instalador en dist/win-unpacked/
 ```
 
-El icono y el avatar se generan a partir del PNG original del gato:
+El icono y el avatar se generan a partir de la referencia del gato pixel:
 
 ```bash
 npm run icons
@@ -107,10 +140,11 @@ preload.js              Puente seguro entre Electron y las interfaces
 src/main/ai.js          Cliente OpenAI-compatible con streaming
 src/pet/                Ventana de la mascota (HTML/CSS/JS + motor de fotogramas)
 src/chat/               Chat, ajustes y avatares
-assets/01_parpadeo/     Fotogramas del parpadeo
-assets/02_saludo/       Fotogramas del saludo con la patita
-assets/03_cola/         Fotogramas del movimiento de cola
+assets/gato-pixel/       Fotogramas pixel art (cola, parpadeo y saludo)
+assets/gato-pixel/referencia_fiel/  Referencia de alta fidelidad (no se empaqueta)
 assets/avatar.png       Avatar para el chat
+assets/icon.png/.ico    Icono de la aplicación
+.github/workflows/      Publicación automática de releases
 scripts/mock-ai.js      Servidor local de pruebas (IA simulada)
 scripts/test-ai.js      Prueba del cliente de IA
 ```

@@ -199,6 +199,21 @@
 
           <div class="divider"></div>
 
+          <div class="section-title">Actualizaciones</div>
+          <div class="update-box">
+            <div class="update-line">
+              <span>Versión instalada: <b id="currentVersion">v—</b></span>
+              <button class="btn ghost" id="btnCheckUpdate">Buscar actualizaciones</button>
+            </div>
+            <p class="update-status" id="updateStatus">Comprueba si hay una versión nueva.</p>
+            <div class="update-progress" id="updateProgress" hidden>
+              <div id="updateProgressBar"></div>
+            </div>
+            <button class="btn primary update-action" id="btnUpdateAction" hidden></button>
+          </div>
+
+          <div class="divider"></div>
+
           <div class="section-title">Privacidad</div>
           <p class="privacy">
             Tu clave de API y el historial se guardan solo en este equipo. Las conversaciones

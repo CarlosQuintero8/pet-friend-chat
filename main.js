@@ -16,6 +16,7 @@ const fs = require('node:fs')
 const crypto = require('node:crypto')
 
 const { streamChat, testConnection } = require('./src/main/ai')
+const { autoUpdater } = require('electron-updater')
 
 /* ------------------------------- Constantes ------------------------------- */
 
@@ -67,6 +68,7 @@ let chatWindow = null
 let tray = null
 let dragState = null
 let activeRequest = null
+let updateState = { status: 'idle', version: null, percent: 0, message: null }
 let chatPositioned = false
 let quitting = false
 let historyTimer = null
@@ -673,6 +675,73 @@ function setWindowMode(mode) {
   relaunchApp()
 }
 
+function broadcastUpdate(patch) {
+  updateState = {
+    ...updateState,
+    ...patch,
+    currentVersion: app.getVersion(),
+  }
+  if (chatWindow && !chatWindow.isDestroyed()) {
+    chatWindow.webContents.send('update:state', updateState)
+  }
+}
+
+function friendlyUpdateError(error) {
+  const message = String(error?.message || error || '')
+  if (/net::|ENOTFOUND|ECONN|ETIMEDOUT|timeout|fetch failed/i.test(message)) {
+    return 'No se pudo conectar con GitHub. Revisa tu conexión e inténtalo de nuevo.'
+  }
+  if (/404|latest\.yml|Cannot find|no published/i.test(message)) {
+    return 'Todavía no hay una versión publicada en GitHub.'
+  }
+  if (/code signature|signature/i.test(message)) {
+    return 'La actualización no tiene una firma válida. Descárgala manualmente desde GitHub Releases.'
+  }
+  return message || 'No se pudo comprobar la actualización.'
+}
+
+function registerUpdater() {
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+
+  autoUpdater.on('checking-for-update', () => {
+    broadcastUpdate({ status: 'checking', message: null, percent: 0 })
+  })
+  autoUpdater.on('update-available', (info) => {
+    broadcastUpdate({
+      status: 'available',
+      version: info?.version || null,
+      message: null,
+      percent: 0,
+    })
+  })
+  autoUpdater.on('update-not-available', () => {
+    broadcastUpdate({
+      status: 'not-available',
+      version: app.getVersion(),
+      message: null,
+      percent: 0,
+    })
+  })
+  autoUpdater.on('download-progress', (progress) => {
+    broadcastUpdate({
+      status: 'downloading',
+      percent: Math.round(Number(progress?.percent) || 0),
+    })
+  })
+  autoUpdater.on('update-downloaded', (info) => {
+    broadcastUpdate({
+      status: 'downloaded',
+      version: info?.version || updateState.version,
+      percent: 100,
+      message: null,
+    })
+  })
+  autoUpdater.on('error', (error) => {
+    broadcastUpdate({ status: 'error', message: friendlyUpdateError(error) })
+  })
+}
+
 /* ---------------------------------- IPC ----------------------------------- */
 
 function registerIpc() {
@@ -682,6 +751,7 @@ function registerIpc() {
     isPackaged: app.isPackaged,
     solid: SOLID,
     version: app.getVersion(),
+    updateState: { ...updateState, currentVersion: app.getVersion() },
   }))
 
   ipcMain.handle('app:quit', () => {
@@ -713,12 +783,55 @@ function registerIpc() {
   ipcMain.handle('chat:stop', () => stopChat())
   ipcMain.handle('chat:clear', () => clearChat())
 
+  ipcMain.handle('update:check', async () => {
+    if (!app.isPackaged) {
+      const message = 'Las actualizaciones solo están disponibles en la versión instalada.'
+      broadcastUpdate({ status: 'unavailable', message })
+      return { ok: false, message }
+    }
+    try {
+      broadcastUpdate({ status: 'checking', message: null, percent: 0 })
+      const result = await autoUpdater.checkForUpdates()
+      return { ok: true, version: result?.updateInfo?.version || null }
+    } catch (error) {
+      const message = friendlyUpdateError(error)
+      broadcastUpdate({ status: 'error', message })
+      return { ok: false, message }
+    }
+  })
+
+  ipcMain.handle('update:download', async () => {
+    if (!app.isPackaged) {
+      return { ok: false, message: 'Solo disponible en la versión instalada.' }
+    }
+    try {
+      await autoUpdater.downloadUpdate()
+      return { ok: true }
+    } catch (error) {
+      const message = friendlyUpdateError(error)
+      broadcastUpdate({ status: 'error', message })
+      return { ok: false, message }
+    }
+  })
+
+  ipcMain.handle('update:install', () => {
+    if (!app.isPackaged) {
+      return { ok: false, message: 'Solo disponible en la versión instalada.' }
+    }
+    quitting = true
+    savePetPosition()
+    setTimeout(() => {
+      autoUpdater.quitAndInstall(false, true)
+    }, 120)
+    return { ok: true }
+  })
+
   ipcMain.handle('asset:read-frame', async (event, name, index) => {
-    const folders = { tail: '03_cola', blink: '01_parpadeo', wave: '02_saludo' }
-    const folder = folders[name]
+    const prefixes = { tail: 'cola', blink: 'parpadeo', wave: 'saludo' }
+    const prefix = prefixes[name]
     const number = Number(index) + 1
-    if (!folder || !Number.isInteger(number) || number < 1 || number > 6) return ''
-    const file = path.join(__dirname, 'assets', folder, `fotograma_0${number}.svg`)
+    if (!prefix || !Number.isInteger(number) || number < 1 || number > 6) return ''
+    const file = path.join(__dirname, 'assets', 'gato-pixel', `${prefix}_0${number}.svg`)
     try {
       return await fs.promises.readFile(file, 'utf8')
     } catch {
@@ -866,6 +979,7 @@ if (!gotLock) {
       app.setLoginItemSettings({ openAtLogin: config.launchAtLogin, path: process.execPath })
     }
     registerIpc()
+    registerUpdater()
     createPetWindow()
     createChatWindow()
     createTray()

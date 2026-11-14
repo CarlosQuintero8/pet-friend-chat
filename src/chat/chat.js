@@ -22,6 +22,9 @@ const host = window.api || {
     version: '1.0.0',
   }),
   saveConfig: async (patch) => ({ ok: true, config: { ...patch } }),
+  checkUpdates: async () => ({ ok: false, message: 'Modo de demostración.' }),
+  downloadUpdate: async () => ({ ok: false, message: 'Modo de demostración.' }),
+  installUpdate: async () => ({ ok: false, message: 'Modo de demostración.' }),
   testConfig: async () => ({ ok: true, message: 'Modo de demostración: sin conexión real.' }),
   sendChat: async () => ({ ok: false, error: 'Abre la app con Electron para chatear.' }),
   stopChat: async () => ({ ok: false }),
@@ -54,6 +57,12 @@ const suggestionsEl = document.getElementById('suggestions')
 const settingsEl = document.getElementById('settings')
 const saveNote = document.getElementById('saveNote')
 const testResult = document.getElementById('testResult')
+const currentVersionEl = document.getElementById('currentVersion')
+const btnCheckUpdate = document.getElementById('btnCheckUpdate')
+const updateStatusEl = document.getElementById('updateStatus')
+const updateProgressEl = document.getElementById('updateProgress')
+const updateProgressBar = document.getElementById('updateProgressBar')
+const btnUpdateAction = document.getElementById('btnUpdateAction')
 
 const form = {
   provider: document.getElementById('fProvider'),
@@ -76,6 +85,8 @@ const state = {
   status: 'idle',
   nearBottom: true,
   clearing: false,
+  version: '—',
+  update: { status: 'idle', version: null, percent: 0, message: null },
 }
 
 const streamBuffers = new Map()
@@ -431,6 +442,7 @@ function readSettingsForm() {
 
 function openSettings() {
   fillSettingsForm()
+  renderUpdate()
   settingsEl.hidden = false
 }
 
@@ -446,6 +458,108 @@ function applyConfigToUi() {
   document.title = `Chat con ${name}`
   statusDotEl.title = `${name} está aquí`
 }
+
+/* ------------------------------ Actualizaciones --------------------------- */
+
+function renderUpdate() {
+  const update = state.update || {}
+  const status = update.status || 'idle'
+  const isBusy = status === 'checking' || status === 'downloading'
+  const supported = state.isPackaged
+
+  currentVersionEl.textContent = `v${state.version}`
+  btnCheckUpdate.disabled = !supported || isBusy
+  btnCheckUpdate.textContent = status === 'checking' ? 'Buscando…' : 'Buscar actualizaciones'
+  updateStatusEl.classList.remove('ok', 'error')
+  updateProgressEl.hidden = status !== 'downloading'
+  updateProgressBar.style.width = `${Math.max(0, Math.min(100, Number(update.percent) || 0))}%`
+  btnUpdateAction.hidden = true
+  btnUpdateAction.disabled = false
+
+  if (!supported) {
+    updateStatusEl.textContent = 'Las actualizaciones solo están disponibles en la versión instalada.'
+    return
+  }
+
+  switch (status) {
+    case 'checking':
+      updateStatusEl.textContent = 'Buscando actualizaciones…'
+      break
+    case 'available':
+      updateStatusEl.textContent = `Hay una versión nueva disponible: v${update.version}.`
+      btnUpdateAction.hidden = false
+      btnUpdateAction.textContent = `Descargar v${update.version}`
+      break
+    case 'not-available':
+      updateStatusEl.textContent = `Estás al día (v${state.version}).`
+      updateStatusEl.classList.add('ok')
+      break
+    case 'downloading':
+      updateStatusEl.textContent = `Descargando${update.version ? ` v${update.version}` : ''}… ${update.percent || 0}%`
+      break
+    case 'downloaded':
+      updateStatusEl.textContent = `Actualización v${update.version || ''} lista. Reinicia para instalarla.`
+      updateStatusEl.classList.add('ok')
+      btnUpdateAction.hidden = false
+      btnUpdateAction.textContent = 'Reiniciar e instalar'
+      break
+    case 'error':
+      updateStatusEl.textContent = update.message || 'No se pudo comprobar la actualización.'
+      updateStatusEl.classList.add('error')
+      btnUpdateAction.hidden = false
+      btnUpdateAction.textContent = 'Reintentar'
+      break
+    case 'unavailable':
+      updateStatusEl.textContent = update.message || 'Actualizaciones no disponibles.'
+      break
+    default:
+      updateStatusEl.textContent = 'Comprueba si hay una versión nueva.'
+  }
+}
+
+function setUpdateState(patch) {
+  state.update = { ...state.update, ...patch }
+  renderUpdate()
+}
+
+async function checkForUpdates() {
+  if (!state.isPackaged) return
+  const status = state.update?.status
+  if (status === 'checking' || status === 'downloading') return
+
+  setUpdateState({ status: 'checking', message: null, percent: 0 })
+  const result = await host.checkUpdates()
+  if (!result?.ok) {
+    setUpdateState({
+      status: 'error',
+      message: result?.message || 'No se pudo comprobar la actualización.',
+    })
+  }
+}
+
+btnCheckUpdate.addEventListener('click', () => {
+  checkForUpdates()
+})
+
+btnUpdateAction.addEventListener('click', async () => {
+  const status = state.update?.status
+  if (status === 'available') {
+    btnUpdateAction.disabled = true
+    setUpdateState({ status: 'downloading', percent: 0, message: null })
+    const result = await host.downloadUpdate()
+    if (!result?.ok) {
+      setUpdateState({
+        status: 'error',
+        message: result?.message || 'No se pudo descargar la actualización.',
+      })
+    }
+  } else if (status === 'downloaded') {
+    btnUpdateAction.disabled = true
+    await host.installUpdate()
+  } else if (status === 'error') {
+    checkForUpdates()
+  }
+})
 
 /* -------------------------------- Eventos --------------------------------- */
 
@@ -495,6 +609,12 @@ host.on('chat:focus', () => {
 
 host.on('chat:open-settings', () => {
   openSettings()
+})
+
+host.on('update:state', (payload) => {
+  if (!payload) return
+  state.update = { ...state.update, ...payload }
+  renderUpdate()
 })
 
 host.on('config:changed', (cfg) => {
@@ -646,7 +766,10 @@ document.getElementById('btnClear').addEventListener('click', (event) => {
     const data = await host.bootstrap()
     state.config = data.config || {}
     state.isPackaged = Boolean(data.isPackaged)
+    state.version = data.version || '—'
+    state.update = data.updateState || { status: 'idle', version: null, percent: 0, message: null }
     applyConfigToUi()
+    renderUpdate()
 
     const history = Array.isArray(data.history) ? data.history : []
     for (const message of history) {

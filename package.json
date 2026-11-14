@@ -1,8 +1,8 @@
 {
   "name": "michi-desktop-pet",
   "productName": "Michi",
-  "version": "1.1.0",
-  "description": "Michi: una gatita virtual para Windows que vive en tu escritorio y conversa contigo con IA.",
+  "version": "1.2.0",
+  "description": "Michi: un gato virtual para Windows que vive en tu escritorio y conversa contigo con IA.",
   "main": "main.js",
   "author": "Carlos",
   "license": "MIT",
@@ -30,7 +30,18 @@
       "main.js",
       "preload.js",
       "src/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "node_modules/**/*",
+      "!assets/gato-pixel/referencia_fiel/**/*",
+      "!assets/gato-pixel/reference.png"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "CarlosQuintero8",
+        "repo": "pet-friend-chat",
+        "releaseType": "release"
+      }
     ],
     "win": {
       "icon": "assets/icon.ico",
@@ -49,5 +60,8 @@
       "createDesktopShortcut": true,
       "shortcutName": "Michi"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }

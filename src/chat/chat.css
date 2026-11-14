@@ -939,6 +939,61 @@ button {
   color: var(--muted);
 }
 
+/* ----------------------------- Actualizaciones ---------------------------- */
+
+.update-box {
+  margin: 4px 0 2px;
+}
+
+.update-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #6b5445;
+}
+
+.update-line b {
+  color: var(--ink);
+}
+
+.update-status {
+  margin: 8px 0 0;
+  min-height: 16px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.update-status.ok {
+  color: #2f9068;
+}
+
+.update-status.error {
+  color: #bb4a3b;
+}
+
+.update-progress {
+  height: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #f3e3d2;
+}
+
+.update-progress div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ffa46c 0%, #f2703f 100%);
+  transition: width 0.2s ease;
+}
+
+.update-action {
+  margin-top: 10px;
+}
+
 .danger-zone {
   display: flex;
   justify-content: space-between;
