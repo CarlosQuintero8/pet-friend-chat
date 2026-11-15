@@ -1,21 +1,21 @@
 # Michi 🐾
 
 Michi es una mascota virtual para Windows: un gato esmoquin kawaii que vive en tu
-escritorio, parpadea, te saluda con la patita y se echa siestas. Haz clic en él
-para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
+escritorio, mueve la cola, parpadea, te saluda con la patita y se echa siestas. Haz clic
+en él para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
 Además **te responde en voz alta** y puedes **hablarle por el micrófono**.
 
 ![Michi](assets/vista_previa.png)
 
 ## Qué incluye
 
-- **Mascota ilustrada** con parpadeo, saludo con la patita, ojos cerrados al dormir
-  y una respiración sutil.
+- **Mascota ilustrada** con cola en movimiento, parpadeo, saludo con la patita, ojos
+  cerrados al dormir y una respiración sutil.
 - **Expresiones**: alegría con destellos, curiosidad con interrogantes, sorpresa, tristeza
   y un balanceo suave mientras habla.
 - **Tamaño compacto**: 116 px de gato.
 - **Se queda donde la dejes**: sin paseos automáticos por el escritorio, pero sigue
-  parpadeando, saludando y durmiendo si la dejas tranquila.
+  moviendo la cola, parpadeando, saludando y durmiendo si la dejas tranquila.
 - **Arrástrala a cualquier posición**, incluso entre monitores. La posición se recuerda.
 - **Chat con IA** con respuestas en streaming, historial persistente y personalidad configurable.
 - **Voz**: Michi lee sus respuestas en voz alta con las voces de Windows y puedes
@@ -173,7 +173,7 @@ src/main/ai.js          Cliente OpenAI-compatible con streaming y dictado
 src/pet/                Ventana de la mascota (HTML/CSS/JS + motor de fotogramas)
 src/pet/speech.js       Voz con la Web Speech API (voces de Windows)
 src/chat/               Chat, ajustes y avatares
-assets/gato-favorito/   Ilustraciones originales del gato (los SVG no se empaquetan)
+assets/gato-favorito/   Ilustraciones originales del gato (SVG y PNG fuente, no se empaquetan)
 assets/gato-favorito/frames/  Fotogramas PNG con transparencia que usa la mascota
 assets/avatar.png       Avatar para el chat
 assets/icon.png/.ico    Icono de la aplicación

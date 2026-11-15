@@ -889,7 +889,7 @@ function registerIpc() {
   })
 
   ipcMain.handle('asset:read-frame', async (event, file) => {
-    if (!/^[1-6]\.png$/.test(String(file || ''))) return ''
+    if (!/^(?:[1-6]|tail-[1-6]|paws-[1-6])\.png$/.test(String(file || ''))) return ''
     try {
       const png = await fs.promises.readFile(
         path.join(__dirname, 'assets', 'gato-favorito', 'frames', file),

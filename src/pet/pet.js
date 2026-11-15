@@ -37,23 +37,30 @@ const FRAME_BASE = '../../assets/gato-favorito/frames'
 
 /* Fotogramas disponibles del gato (PNG con transparencia). */
 const FRAME_FILES = {
-  idle: '1.png',
-  wave: '2.png',
-  idleAlt: '3.png',
-  idleAlt2: '4.png',
   sleepy: '5.png',
   closed: '6.png',
+  tail1: 'tail-1.png',
+  tail2: 'tail-2.png',
+  tail3: 'tail-3.png',
+  tail4: 'tail-4.png',
+  tail5: 'tail-5.png',
+  tail6: 'tail-6.png',
+  paws1: 'paws-1.png',
+  paws2: 'paws-2.png',
+  paws3: 'paws-3.png',
+  paws4: 'paws-4.png',
+  paws5: 'paws-5.png',
+  paws6: 'paws-6.png',
 }
 
-/* Secuencias: el arte son variantes alineadas, así que solo animamos las
- * transiciones que se leen bien (parpadeo, saludo y ojos cerrados). */
+/* Secuencias de animación. */
 const FRAMES = {
-  tail: ['idle'],
-  blink: ['idle', 'sleepy', 'closed', 'sleepy', 'idle'],
-  wave: ['idle', 'wave', 'idle', 'wave', 'idle', 'wave', 'idle'],
+  tail: ['tail1', 'tail2', 'tail3', 'tail4', 'tail5', 'tail6', 'tail5', 'tail4', 'tail3', 'tail2'],
+  blink: ['tail1', 'sleepy', 'closed', 'sleepy'],
+  wave: ['paws1', 'paws2', 'paws5', 'paws3', 'paws6', 'paws3', 'paws5', 'paws2', 'paws1'],
 }
 
-const TAIL_FRAME_MS = 260
+const TAIL_FRAME_MS = 200
 const CLOSED_EYES_FRAME = 2 // blink[2] = ojos cerrados
 
 const frameEls = new Map()
@@ -112,9 +119,8 @@ function tailTick() {
 function resumeTail() {
   stopSprite()
   animating = false
-  tailIndex = 0
   if (!sleepingSprite) {
-    showFrame('tail', 0)
+    showFrame('tail', tailIndex)
     startTail()
   }
 }
@@ -156,7 +162,7 @@ function setSpriteSleeping(on) {
 const SHAPE_DILATION = 3
 const shapeMasks = new Map()
 const maskIds = new Map()
-let currentFrameKey = 'idle'
+let currentFrameKey = 'tail1'
 let masksReady = false
 let shapeTimer = null
 let lastShapeKey = ''
@@ -275,7 +281,7 @@ async function buildMasks() {
     console.error('No se pudo calcular la silueta del gato', error)
     const W = Math.max(1, window.innerWidth)
     const H = Math.max(1, window.innerHeight)
-    shapeMasks.set('idle', fallbackMask(W, H))
+    shapeMasks.set('tail1', fallbackMask(W, H))
     masksReady = true
     requestShape(true)
   }
@@ -333,7 +339,7 @@ function applyShape() {
   const key = `${maskId}|${bubbleKey}`
   if (key === lastShapeKey) return
   lastShapeKey = key
-  const base = shapeMasks.get(currentFrameKey) || shapeMasks.get('idle') || []
+  const base = shapeMasks.get(currentFrameKey) || shapeMasks.get('tail1') || []
   const rects = base.concat(bubbleShapeRects())
   if (rects.length) host.setShape(rects)
 }
@@ -356,7 +362,7 @@ function requestShape(force = false) {
 /* Diagnóstico de desarrollo: permite inspeccionar la silueta calculada. */
 window.__michiShape = () => {
   if (!SOLID) return { solid: false }
-  const spans = shapeMasks.get(currentFrameKey) || shapeMasks.get('idle') || []
+  const spans = shapeMasks.get(currentFrameKey) || shapeMasks.get('tail1') || []
   if (!spans.length) return { solid: true, masksReady, count: 0 }
   let minX = Infinity
   let maxX = -Infinity

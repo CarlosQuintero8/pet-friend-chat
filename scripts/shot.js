@@ -9,7 +9,7 @@ const fs = require('node:fs')
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 ipcMain.handle('asset:read-frame', (event, file) => {
-  if (!/^[1-6]\.png$/.test(String(file || ''))) return ''
+  if (!/^(?:[1-6]|tail-[1-6]|paws-[1-6])\.png$/.test(String(file || ''))) return ''
   try {
     return fs
       .readFileSync(path.join(__dirname, '..', 'assets', 'gato-favorito', 'frames', file))
