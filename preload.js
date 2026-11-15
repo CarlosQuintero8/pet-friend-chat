@@ -50,7 +50,7 @@ contextBridge.exposeInMainWorld('api', {
   dragEnd: () => ipcRenderer.send('pet:drag-end'),
   setInteractive: (interactive) => ipcRenderer.send('pet:interactive', interactive),
   setShape: (rects) => ipcRenderer.send('pet:shape', rects),
-  readFrame: (name, index) => ipcRenderer.invoke('asset:read-frame', name, index),
+  readFrame: (file) => ipcRenderer.invoke('asset:read-frame', file),
   savePosition: () => ipcRenderer.send('pet:save-position'),
   showContextMenu: () => ipcRenderer.send('pet:context-menu'),
 

@@ -1,4 +1,4 @@
-# Genera avatar e iconos de Michi a partir del PNG original.
+# Genera avatar e iconos de Michi a partir del fotograma del gato.
 # Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icons.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -6,14 +6,15 @@ Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path -Parent $PSScriptRoot
 $assets = Join-Path $root 'assets'
-$sourceFile = Get-ChildItem $assets -Filter 'Gato esmoquin*.png' | Select-Object -First 1
-if (-not $sourceFile) { throw 'No se encuentra el PNG del gato en assets' }
+$sourceFile = Join-Path $assets 'gato-favorito\frames\1.png'
+if (-not (Test-Path $sourceFile)) { throw 'No se encuentra el fotograma assets/gato-favorito/frames/1.png' }
 
-$source = [System.Drawing.Image]::FromFile($sourceFile.FullName)
-Write-Output "Origen: $($sourceFile.Name) $($source.Width)x$($source.Height)"
+$source = [System.Drawing.Image]::FromFile($sourceFile)
+Write-Output "Origen: $sourceFile $($source.Width)x$($source.Height)"
 
-# Recorte del rostro (coordenadas sobre la imagen 1254x1254).
-$crop = New-Object System.Drawing.Rectangle 240, 30, 800, 800
+# Recorte del rostro, proporcional al fotograma.
+$cropSize = [int]($source.Width * 0.62)
+$crop = New-Object System.Drawing.Rectangle ([int]($source.Width * 0.19)), ([int]($source.Height * 0.01)), $cropSize, $cropSize
 
 function New-Canvas([int]$size) {
   $bmp = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)

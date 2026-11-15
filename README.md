@@ -1,7 +1,7 @@
 # Michi 🐾
 
 Michi es una mascota virtual para Windows: un gato esmoquin kawaii que vive en tu
-escritorio, parpadea, mueve la cola y te saluda con la patita. Haz clic en él
+escritorio, parpadea, te saluda con la patita y se echa siestas. Haz clic en él
 para hablar y conectarlo a **Google Gemini** (o cualquier API compatible con OpenAI).
 Además **te responde en voz alta** y puedes **hablarle por el micrófono**.
 
@@ -9,12 +9,13 @@ Además **te responde en voz alta** y puedes **hablarle por el micrófono**.
 
 ## Qué incluye
 
-- **Mascota animada** con fotogramas vectoriales: cola en movimiento, parpadeo y saludo.
+- **Mascota ilustrada** con parpadeo, saludo con la patita, ojos cerrados al dormir
+  y una respiración sutil.
 - **Expresiones**: alegría con destellos, curiosidad con interrogantes, sorpresa, tristeza
   y un balanceo suave mientras habla.
 - **Tamaño compacto**: 116 px de gato.
 - **Se queda donde la dejes**: sin paseos automáticos por el escritorio, pero sigue
-  parpadeando, moviendo la cola y saludando. Duerme si la dejas tranquila.
+  parpadeando, saludando y durmiendo si la dejas tranquila.
 - **Arrástrala a cualquier posición**, incluso entre monitores. La posición se recuerda.
 - **Chat con IA** con respuestas en streaming, historial persistente y personalidad configurable.
 - **Voz**: Michi lee sus respuestas en voz alta con las voces de Windows y puedes
@@ -157,7 +158,7 @@ npm run dist    # instalador NSIS en dist/
 npm run pack    # versión sin instalador en dist/win-unpacked/
 ```
 
-El icono y el avatar se generan a partir del PNG original del gato:
+El icono y el avatar se generan a partir del primer fotograma del gato:
 
 ```bash
 npm run icons
@@ -172,9 +173,8 @@ src/main/ai.js          Cliente OpenAI-compatible con streaming y dictado
 src/pet/                Ventana de la mascota (HTML/CSS/JS + motor de fotogramas)
 src/pet/speech.js       Voz con la Web Speech API (voces de Windows)
 src/chat/               Chat, ajustes y avatares
-assets/01_parpadeo/     Fotogramas del parpadeo
-assets/02_saludo/       Fotogramas del saludo con la patita
-assets/03_cola/         Fotogramas del movimiento de cola
+assets/gato-favorito/   Ilustraciones originales del gato (los SVG no se empaquetan)
+assets/gato-favorito/frames/  Fotogramas PNG con transparencia que usa la mascota
 assets/avatar.png       Avatar para el chat
 assets/icon.png/.ico    Icono de la aplicación
 .github/workflows/      Publicación automática de releases

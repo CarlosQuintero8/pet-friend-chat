@@ -8,16 +8,12 @@ const fs = require('node:fs')
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-ipcMain.handle('asset:read-frame', (event, name, index) => {
-  const folders = { tail: '03_cola', blink: '01_parpadeo', wave: '02_saludo' }
-  const folder = folders[name]
-  const number = Number(index) + 1
-  if (!folder || !Number.isInteger(number) || number < 1 || number > 6) return ''
+ipcMain.handle('asset:read-frame', (event, file) => {
+  if (!/^[1-6]\.png$/.test(String(file || ''))) return ''
   try {
-    return fs.readFileSync(
-      path.join(__dirname, '..', 'assets', folder, `fotograma_0${number}.svg`),
-      'utf8',
-    )
+    return fs
+      .readFileSync(path.join(__dirname, '..', 'assets', 'gato-favorito', 'frames', file))
+      .toString('base64')
   } catch {
     return ''
   }

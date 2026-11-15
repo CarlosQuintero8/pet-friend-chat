@@ -33,15 +33,28 @@ const speech = window.MichiSpeech || null
 
 /* ------------------------------- Fotogramas -------------------------------- */
 
-const FRAME_BASE = '../../assets'
-const FRAMES = {
-  tail: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/03_cola/fotograma_0${i + 1}.svg`),
-  blink: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/01_parpadeo/fotograma_0${i + 1}.svg`),
-  wave: Array.from({ length: 6 }, (_, i) => `${FRAME_BASE}/02_saludo/fotograma_0${i + 1}.svg`),
+const FRAME_BASE = '../../assets/gato-favorito/frames'
+
+/* Fotogramas disponibles del gato (PNG con transparencia). */
+const FRAME_FILES = {
+  idle: '1.png',
+  wave: '2.png',
+  idleAlt: '3.png',
+  idleAlt2: '4.png',
+  sleepy: '5.png',
+  closed: '6.png',
 }
 
-const TAIL_FRAME_MS = 230
-const CLOSED_EYES_FRAME = 2 // 01_parpadeo/fotograma_03.svg
+/* Secuencias: el arte son variantes alineadas, así que solo animamos las
+ * transiciones que se leen bien (parpadeo, saludo y ojos cerrados). */
+const FRAMES = {
+  tail: ['idle'],
+  blink: ['idle', 'sleepy', 'closed', 'sleepy', 'idle'],
+  wave: ['idle', 'wave', 'idle', 'wave', 'idle', 'wave', 'idle'],
+}
+
+const TAIL_FRAME_MS = 260
+const CLOSED_EYES_FRAME = 2 // blink[2] = ojos cerrados
 
 const frameEls = new Map()
 let visibleFrame = null
@@ -51,28 +64,26 @@ let sleepingSprite = false
 let tailIndex = 0
 
 function buildFrames() {
-  for (const [name, urls] of Object.entries(FRAMES)) {
-    urls.forEach((url, index) => {
-      const img = document.createElement('img')
-      img.src = url
-      img.alt = ''
-      img.draggable = false
-      img.decoding = 'async'
-      catFramesEl.appendChild(img)
-      frameEls.set(`${name}-${index}`, img)
-    })
+  for (const [name, file] of Object.entries(FRAME_FILES)) {
+    const img = document.createElement('img')
+    img.src = `${FRAME_BASE}/${file}`
+    img.alt = ''
+    img.draggable = false
+    img.decoding = 'async'
+    catFramesEl.appendChild(img)
+    frameEls.set(name, img)
   }
   showFrame('tail', 0)
 }
 
-function showFrame(name, index) {
-  const key = `${name}-${index}`
-  const next = frameEls.get(key)
+function showFrame(sequence, index) {
+  const name = FRAMES[sequence]?.[index]
+  const next = name ? frameEls.get(name) : null
   if (!next || next === visibleFrame) return
   if (visibleFrame) visibleFrame.classList.remove('active')
   next.classList.add('active')
   visibleFrame = next
-  currentFrameKey = key
+  currentFrameKey = name
   requestShape()
 }
 
@@ -85,6 +96,8 @@ function stopSprite() {
 
 function startTail() {
   if (sleepingSprite) return
+  // Con un solo fotograma de reposo no hace falta temporizador.
+  if (FRAMES.tail.length < 2) return
   if (!spriteTimer) spriteTimer = setTimeout(tailTick, TAIL_FRAME_MS)
 }
 
@@ -143,7 +156,7 @@ function setSpriteSleeping(on) {
 const SHAPE_DILATION = 3
 const shapeMasks = new Map()
 const maskIds = new Map()
-let currentFrameKey = 'tail-0'
+let currentFrameKey = 'idle'
 let masksReady = false
 let shapeTimer = null
 let lastShapeKey = ''
@@ -206,12 +219,12 @@ function spansFromMask(mask, W, H) {
   return rects
 }
 
-function loadSvgImage(svg) {
+function loadPngImage(base64) {
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
     image.onerror = () => reject(new Error('No se pudo rasterizar el fotograma'))
-    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    image.src = `data:image/png;base64,${base64}`
   })
 }
 
@@ -240,23 +253,20 @@ async function buildMasks() {
     canvas.height = H
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
 
-    for (const name of Object.keys(FRAMES)) {
-      for (let index = 0; index < FRAMES[name].length; index++) {
-        const svg = await host.readFrame(name, index)
-        if (!svg) throw new Error(`Falta el fotograma ${name}-${index}`)
-        const image = await loadSvgImage(svg)
-        ctx.clearRect(0, 0, W, H)
-        ctx.drawImage(image, rect.left, rect.top, rect.width, rect.height)
-        const data = ctx.getImageData(0, 0, W, H).data
-        const mask = new Uint8Array(W * H)
-        for (let i = 0, p = 3; i < mask.length; i++, p += 4) {
-          mask[i] = data[p] > 24 ? 1 : 0
-        }
-        dilateMask(mask, W, H, SHAPE_DILATION)
-        const key = `${name}-${index}`
-        shapeMasks.set(key, spansFromMask(mask, W, H))
-        maskIds.set(key, hashMask(mask))
+    for (const [name, file] of Object.entries(FRAME_FILES)) {
+      const png = await host.readFrame(file)
+      if (!png) throw new Error(`Falta el fotograma ${file}`)
+      const image = await loadPngImage(png)
+      ctx.clearRect(0, 0, W, H)
+      ctx.drawImage(image, rect.left, rect.top, rect.width, rect.height)
+      const data = ctx.getImageData(0, 0, W, H).data
+      const mask = new Uint8Array(W * H)
+      for (let i = 0, p = 3; i < mask.length; i++, p += 4) {
+        mask[i] = data[p] > 24 ? 1 : 0
       }
+      dilateMask(mask, W, H, SHAPE_DILATION)
+      shapeMasks.set(name, spansFromMask(mask, W, H))
+      maskIds.set(name, hashMask(mask))
     }
 
     masksReady = true
@@ -265,7 +275,7 @@ async function buildMasks() {
     console.error('No se pudo calcular la silueta del gato', error)
     const W = Math.max(1, window.innerWidth)
     const H = Math.max(1, window.innerHeight)
-    shapeMasks.set('tail-0', fallbackMask(W, H))
+    shapeMasks.set('idle', fallbackMask(W, H))
     masksReady = true
     requestShape(true)
   }
@@ -323,7 +333,7 @@ function applyShape() {
   const key = `${maskId}|${bubbleKey}`
   if (key === lastShapeKey) return
   lastShapeKey = key
-  const base = shapeMasks.get(currentFrameKey) || shapeMasks.get('tail-0') || []
+  const base = shapeMasks.get(currentFrameKey) || shapeMasks.get('idle') || []
   const rects = base.concat(bubbleShapeRects())
   if (rects.length) host.setShape(rects)
 }
@@ -346,7 +356,7 @@ function requestShape(force = false) {
 /* Diagnóstico de desarrollo: permite inspeccionar la silueta calculada. */
 window.__michiShape = () => {
   if (!SOLID) return { solid: false }
-  const spans = shapeMasks.get(currentFrameKey) || shapeMasks.get('tail-0') || []
+  const spans = shapeMasks.get(currentFrameKey) || shapeMasks.get('idle') || []
   if (!spans.length) return { solid: true, masksReady, count: 0 }
   let minX = Infinity
   let maxX = -Infinity
