@@ -23,10 +23,13 @@ const host = window.api || {
   setInteractive() {},
   setShape() {},
   readFrame: async () => '',
+  reportSpeech() {},
   toggleChat() {},
   showContextMenu() {},
   on: () => () => {},
 }
+
+const speech = window.MichiSpeech || null
 
 /* ------------------------------- Fotogramas -------------------------------- */
 
@@ -380,6 +383,7 @@ let dragging = false
 let sleeping = false
 let chatOpen = false
 let interactive = false
+let voiceActive = false
 let pointer = null
 let streamRaw = ''
 let lastInteraction = Date.now()
@@ -538,6 +542,7 @@ function wake(silent = true) {
 
 function enterSleep() {
   if (busy || dragging) return
+  if (speech) speech.stop()
   sleeping = true
   hideBubble()
   setState('sleep')
@@ -556,6 +561,55 @@ function reactLove() {
   showBubble(line, { duration: 4200 })
   flashState('love', 3000)
 }
+
+/* --------------------------------- Voz ------------------------------------ */
+
+function applyVoiceConfig() {
+  if (!speech) return
+  speech.configure({
+    enabled: config.voiceEnabled !== false,
+    name: config.voiceName || '',
+    rate: config.voiceRate ?? 1,
+    pitch: config.voicePitch ?? 1,
+    volume: config.voiceVolume ?? 1,
+  })
+}
+
+if (speech) {
+  speech.onState((type) => {
+    host.reportSpeech(type === 'start')
+
+    if (type === 'start') {
+      voiceActive = true
+      lastInteraction = Date.now()
+      if (sleeping) wake()
+      if (!dragging) setState('speak')
+      return
+    }
+
+    voiceActive = false
+    if (type === 'error') return
+    if (sleeping) setState('sleep')
+    else if (busy) setState('talk')
+    else if (dragging) setState('drag')
+    else setState('idle')
+  })
+}
+
+host.on('speech:speak', (payload) => {
+  if (!payload?.text || !speech) return
+  if (config.voiceEnabled === false) return
+  speech.speak(payload.text, { enabled: true })
+})
+
+host.on('speech:preview', (payload) => {
+  if (!payload?.text || !speech) return
+  speech.speak(payload.text, { ...(payload.voice || {}), enabled: true })
+})
+
+host.on('speech:stop', () => {
+  if (speech) speech.stop()
+})
 
 /* --------------------------- Comportamiento ------------------------------- */
 
@@ -584,7 +638,7 @@ function scheduleAction(delay) {
 }
 
 function runAction() {
-  if (busy || dragging || sleeping || chatOpen) return
+  if (busy || dragging || sleeping || chatOpen || voiceActive) return
   if (bubble.classList.contains('show')) return
 
   const roll = Math.random()
@@ -614,6 +668,7 @@ function scheduleComment() {
       !dragging &&
       !sleeping &&
       !chatOpen &&
+      !voiceActive &&
       !bubble.classList.contains('show')
     ) {
       const line = COMMENTS[Math.floor(Math.random() * COMMENTS.length)]
@@ -748,6 +803,7 @@ host.on('chat:state', (payload) => {
   if (status === 'thinking') {
     busy = true
     wake()
+    if (speech) speech.stop()
     streamRaw = ''
     setState('think')
     if (!chatOpen) showBubble('', { dots: true, sticky: true })
@@ -796,6 +852,7 @@ host.on('chat:stream-end', (payload) => {
 })
 
 host.on('chat:cleared', () => {
+  if (speech) speech.stop()
   hideBubble()
   if (!sleeping) setState('idle')
 })
@@ -820,6 +877,7 @@ host.on('pet:sleep', () => enterSleep())
 
 host.on('config:changed', (next) => {
   config = { ...config, ...next }
+  applyVoiceConfig()
 })
 
 host.on('pet:dragging', (isDragging) => {
@@ -833,12 +891,14 @@ host.on('pet:dragging', (isDragging) => {
 
 buildFrames()
 resumeTail()
+applyVoiceConfig()
 if (SOLID) buildMasks()
 
 ;(async () => {
   try {
     const data = await host.bootstrap()
     if (data?.config) config = { ...config, ...data.config }
+    applyVoiceConfig()
     if (!data?.history || data.history.length === 0) {
       setTimeout(() => {
         showBubble(

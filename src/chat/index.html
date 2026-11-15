@@ -24,6 +24,33 @@
             </div>
           </div>
           <div class="actions">
+            <button
+              class="icon-btn voice-btn"
+              id="btnVoice"
+              title="Silenciar voz"
+              aria-label="Activar o silenciar la voz"
+            >
+              <svg class="voice-on" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9v6h3.6L13 19V5L7.6 9H4Z" fill="currentColor" />
+                <path
+                  d="M16 8.6a5 5 0 0 1 0 6.8M18.7 6.2a8.4 8.4 0 0 1 0 11.6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <svg class="voice-off" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9v6h3.6L13 19V5L7.6 9H4Z" fill="currentColor" />
+                <path
+                  d="m16.4 9.4 4.2 4.2m0-4.2-4.2 4.2"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
             <button class="icon-btn" id="btnNew" title="Nueva conversación">＋</button>
             <button class="icon-btn" id="btnSettings" title="Ajustes">⚙</button>
             <button class="icon-btn" id="btnMin" title="Minimizar">–</button>
@@ -58,6 +85,18 @@
         </div>
 
         <footer class="composer">
+          <button class="mic" id="btnMic" title="Hablar con Michi (dictado)" aria-label="Dictar por voz">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="3" width="6" height="10" rx="3" fill="currentColor" />
+              <path
+                d="M5.8 11.5a6.2 6.2 0 0 0 12.4 0M12 17.7V21"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
           <div class="input-wrap">
             <textarea
               id="input"
@@ -196,6 +235,53 @@
               </span>
             </label>
           </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Voz</div>
+
+          <div class="switches">
+            <label class="switch">
+              <input type="checkbox" id="fVoice" />
+              <span class="track"></span>
+              <span class="switch-text">
+                <b>Hablar las respuestas</b>
+                <small>Michi lee en voz alta lo que responde, con una voz de Windows.</small>
+              </span>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Voz</span>
+            <select id="fVoiceName">
+              <option value="">Automática (español)</option>
+            </select>
+          </label>
+
+          <div class="slider-field">
+            <div class="slider-label"><span>Velocidad</span><b id="voiceRateValue">1.0×</b></div>
+            <input type="range" id="fVoiceRate" min="0.6" max="1.5" step="0.05" value="1" />
+          </div>
+
+          <div class="slider-field">
+            <div class="slider-label"><span>Tono</span><b id="voicePitchValue">1.0</b></div>
+            <input type="range" id="fVoicePitch" min="0.6" max="1.5" step="0.05" value="1" />
+          </div>
+
+          <div class="slider-field">
+            <div class="slider-label"><span>Volumen</span><b id="voiceVolumeValue">100 %</b></div>
+            <input type="range" id="fVoiceVolume" min="0" max="1" step="0.05" value="1" />
+          </div>
+
+          <div class="row">
+            <button class="btn ghost" id="btnVoiceTest">Probar voz</button>
+            <span class="test-result" id="voiceTestResult"></span>
+          </div>
+
+          <p class="privacy">
+            La voz usa las voces instaladas en Windows y no envía texto a ningún servicio. El
+            dictado con el micrófono sí manda el audio a tu proveedor de IA.
+          </p>
 
           <div class="divider"></div>
 

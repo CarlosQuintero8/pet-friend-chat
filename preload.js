@@ -16,6 +16,10 @@ const EVENTS = [
   'chat:open-settings',
   'config:changed',
   'update:state',
+  'speech:speak',
+  'speech:preview',
+  'speech:stop',
+  'speech:state',
 ]
 
 contextBridge.exposeInMainWorld('api', {
@@ -49,6 +53,12 @@ contextBridge.exposeInMainWorld('api', {
   readFrame: (name, index) => ipcRenderer.invoke('asset:read-frame', name, index),
   savePosition: () => ipcRenderer.send('pet:save-position'),
   showContextMenu: () => ipcRenderer.send('pet:context-menu'),
+
+  /* Voz */
+  reportSpeech: (speaking) => ipcRenderer.send('speech:state', speaking),
+  stopSpeaking: () => ipcRenderer.send('speech:stop'),
+  previewVoice: (text, voice) => ipcRenderer.send('speech:preview', { text, voice }),
+  transcribe: (audio, mime) => ipcRenderer.invoke('asr:transcribe', { audio, mime }),
 
   /* Eventos */
   on: (channel, callback) => {

@@ -176,6 +176,124 @@ async function streamChat(config, messages, onDelta, signal) {
   return full
 }
 
+/* ------------------------------ Dictado por voz ---------------------------- */
+
+const ASR_MODELS = {
+  openai: 'whisper-1',
+  groq: 'whisper-large-v3-turbo',
+  custom: 'whisper-1',
+}
+
+function transcriptFromGemini(json) {
+  const parts = json?.candidates?.[0]?.content?.parts
+  if (!Array.isArray(parts)) return ''
+  return parts
+    .map((part) => (typeof part?.text === 'string' ? part.text : ''))
+    .join('')
+    .trim()
+}
+
+async function transcribeWithGemini(config, audioBase64, mimeType) {
+  if (!config.apiKey) {
+    throw new Error('Falta la clave de API para transcribir el audio.')
+  }
+  const base = endpoint(config.baseURL).replace(/\/openai$/i, '')
+  const url = `${base}/models/${encodeURIComponent(config.model)}:generateContent`
+
+  let res
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: 'Transcribe literalmente el audio en su idioma original. Devuelve solo el texto hablado, sin comillas, sin etiquetas y sin comentarios. Si no se oye ninguna voz, devuelve una cadena vacía.',
+              },
+              { inline_data: { mime_type: mimeType, data: audioBase64 } },
+            ],
+          },
+        ],
+        generationConfig: { temperature: 0, maxOutputTokens: 512 },
+      }),
+      signal: AbortSignal.timeout(60000),
+    })
+  } catch (err) {
+    throw new Error(networkErrorMessage(err))
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(httpErrorMessage(res.status, body))
+  }
+
+  const json = await res.json().catch(() => ({}))
+  return transcriptFromGemini(json)
+    .replace(/^["'«“]+/, '')
+    .replace(/["'»”]+$/, '')
+    .trim()
+}
+
+async function transcribeWithOpenAI(config, audioBase64, mimeType, model) {
+  if (!config.apiKey && !isLocalURL(config.baseURL)) {
+    throw new Error('Falta la clave de API para transcribir el audio.')
+  }
+
+  const bytes = Buffer.from(audioBase64, 'base64')
+  if (!bytes.length) throw new Error('El audio llegó vacío.')
+
+  const form = new FormData()
+  form.append('file', new Blob([bytes], { type: mimeType }), 'michi.wav')
+  form.append('model', model)
+  form.append('response_format', 'json')
+
+  let res
+  try {
+    res = await fetch(endpoint(config.baseURL, '/audio/transcriptions'), {
+      method: 'POST',
+      headers: config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : undefined,
+      body: form,
+      signal: AbortSignal.timeout(60000),
+    })
+  } catch (err) {
+    throw new Error(networkErrorMessage(err))
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    if (res.status === 404) {
+      throw new Error('Este proveedor no tiene servicio de transcripción de audio.')
+    }
+    throw new Error(httpErrorMessage(res.status, body))
+  }
+
+  const json = await res.json().catch(() => ({}))
+  return String(json?.text || json?.transcription || '').trim()
+}
+
+/**
+ * Transcribe una grabación de micrófono (WAV en base64) con el proveedor
+ * configurado. Devuelve el texto dictado.
+ */
+async function transcribe(config, audioBase64, mimeType = 'audio/wav') {
+  const audio = String(audioBase64 || '')
+  if (!audio) throw new Error('No se ha grabado nada.')
+  if (!config?.baseURL) throw new Error('Falta configurar la URL base en Ajustes.')
+
+  const provider = config.provider || 'custom'
+  if (provider === 'gemini') return transcribeWithGemini(config, audio, mimeType)
+
+  const model = ASR_MODELS[provider]
+  if (model) return transcribeWithOpenAI(config, audio, mimeType, model)
+
+  throw new Error(
+    'Este proveedor no admite dictado por voz. Usa Google Gemini, OpenAI o Groq en Ajustes.',
+  )
+}
+
 /** Prueba rápida para el botón "Probar conexión". */
 async function testConnection(config) {
   if (!config?.apiKey && !isLocalURL(config.baseURL)) {
@@ -211,4 +329,4 @@ async function testConnection(config) {
   }
 }
 
-module.exports = { streamChat, testConnection, isLocalURL }
+module.exports = { streamChat, testConnection, transcribe, isLocalURL }

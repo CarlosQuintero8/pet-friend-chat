@@ -305,6 +305,157 @@ body {
   }
 }
 
+.think-marks {
+  top: 4px;
+  right: -2px;
+  display: flex;
+  gap: 1px;
+  opacity: 0;
+  color: #c9a06f;
+  font-weight: 700;
+  transition: opacity 0.2s ease;
+}
+
+.think-marks span {
+  font-size: 12px;
+  animation: markFloat 2.4s ease-in-out infinite;
+}
+
+.think-marks span:nth-child(2) {
+  font-size: 9px;
+  animation-delay: 0.5s;
+}
+
+.stage[data-state="think"] .think-marks {
+  opacity: 1;
+}
+
+@keyframes markFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.85);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1);
+  }
+  75% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(1.05);
+  }
+}
+
+.surprise-mark {
+  top: 2px;
+  right: 4px;
+  opacity: 0;
+  color: #f2874f;
+  font-weight: 800;
+  transition: opacity 0.15s ease;
+}
+
+.surprise-mark span {
+  display: inline-block;
+  font-size: 18px;
+}
+
+.stage[data-state="surprised"] .surprise-mark {
+  opacity: 1;
+}
+
+.stage[data-state="surprised"] .surprise-mark span {
+  animation: markPop 0.55s ease-out 1;
+}
+
+@keyframes markPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sparkles {
+  top: 6px;
+  left: 0;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  color: #f2b84b;
+}
+
+.sparkles span {
+  font-size: 12px;
+}
+
+.stage[data-state="happy"] .sparkles {
+  opacity: 1;
+}
+
+.stage[data-state="happy"] .sparkles span {
+  animation: sparkle 1.1s ease-in-out infinite;
+}
+
+.stage[data-state="happy"] .sparkles span:nth-child(2) {
+  animation-delay: 0.28s;
+  font-size: 9px;
+}
+
+.stage[data-state="happy"] .sparkles span:nth-child(3) {
+  animation-delay: 0.56s;
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(18deg);
+  }
+}
+
+.sweat-drop {
+  top: 40px;
+  right: -4px;
+  opacity: 0;
+  font-size: 12px;
+}
+
+.stage[data-state="sad"] .sweat-drop {
+  opacity: 0.9;
+}
+
+.stage[data-state="sad"] .sweat-drop span {
+  animation: sweatSlide 2.6s ease-in-out infinite;
+}
+
+@keyframes sweatSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  40% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
 .dust {
   bottom: 16px;
   left: 50%;
@@ -368,6 +519,10 @@ body {
 
 .stage[data-state="talk"] .cat-frames {
   animation: talkBounce 1s ease-in-out infinite;
+}
+
+.stage[data-state="speak"] .cat-frames {
+  animation: speakBob 0.36s ease-in-out infinite;
 }
 
 .stage[data-state="think"] .cat-frames {
@@ -437,6 +592,16 @@ body {
   }
   50% {
     transform: translateY(-3px) scale(1.008, 0.992);
+  }
+}
+
+@keyframes speakBob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-1.5px) scale(1.007, 0.993);
   }
 }
 
@@ -558,6 +723,10 @@ html.solid .stage[data-state="walk"] .cat-frames {
 
 html.solid .stage[data-state="talk"] .cat-frames {
   animation: solidBob 1s ease-in-out infinite;
+}
+
+html.solid .stage[data-state="speak"] .cat-frames {
+  animation: solidBob 0.9s ease-in-out infinite;
 }
 
 html.solid .stage[data-state="think"] .cat-frames {

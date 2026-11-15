@@ -181,6 +181,41 @@ button {
   color: #c2412f;
 }
 
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.voice-btn .voice-off {
+  display: none;
+}
+
+.voice-btn.off {
+  color: #c9b3a0;
+}
+
+.voice-btn.off .voice-on {
+  display: none;
+}
+
+.voice-btn.off .voice-off {
+  display: block;
+}
+
+.voice-btn.speaking {
+  animation: voicePulse 1.05s ease-in-out infinite;
+}
+
+@keyframes voicePulse {
+  0%,
+  100% {
+    color: #f2703f;
+  }
+  50% {
+    color: #ffb17c;
+  }
+}
+
 /* ------------------------------- Mensajes -------------------------------- */
 
 .messages {
@@ -594,6 +629,60 @@ button {
   box-shadow: none;
 }
 
+.mic {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 15px;
+  background: #fff3e6;
+  color: #a97d5f;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.mic svg {
+  width: 20px;
+  height: 20px;
+}
+
+.mic:hover {
+  background: #fbe8d5;
+  color: #7a5f4c;
+}
+
+.mic:active {
+  transform: scale(0.94);
+}
+
+.mic:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mic.recording {
+  background: #ffe0da;
+  border-color: #f6b9ad;
+  color: #c2412f;
+  animation: micPulse 1.1s ease-in-out infinite;
+}
+
+.mic.busy {
+  color: #f2703f;
+}
+
+@keyframes micPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(194, 65, 47, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(194, 65, 47, 0);
+  }
+}
+
 .send.stop {
   background: #40312a;
   box-shadow: 0 8px 18px rgba(64, 49, 42, 0.28);
@@ -755,6 +844,61 @@ button {
 
 .field small b {
   color: #a5765a;
+}
+
+.slider-field {
+  margin-bottom: 12px;
+}
+
+.slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b5445;
+}
+
+.slider-label b {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b08a6e;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-field input[type="range"] {
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider-field input[type="range"]::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f7c9a8, #f0ddc9);
+}
+
+.slider-field input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin-top: -5px;
+  border-radius: 50%;
+  border: 2px solid #fffdfa;
+  background: linear-gradient(135deg, #ffa46c, #f2703f);
+  box-shadow: 0 2px 6px rgba(242, 120, 75, 0.35);
+}
+
+.slider-field input[type="range"]:focus-visible {
+  outline: 2px solid rgba(242, 120, 75, 0.35);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .password-wrap {

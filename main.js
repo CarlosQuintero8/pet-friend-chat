@@ -4,6 +4,7 @@ const {
   app,
   BrowserWindow,
   ipcMain,
+  session,
   Tray,
   Menu,
   screen,
@@ -15,7 +16,7 @@ const path = require('node:path')
 const fs = require('node:fs')
 const crypto = require('node:crypto')
 
-const { streamChat, testConnection } = require('./src/main/ai')
+const { streamChat, testConnection, transcribe } = require('./src/main/ai')
 const { autoUpdater } = require('electron-updater')
 
 /* ------------------------------- Constantes ------------------------------- */
@@ -43,6 +44,11 @@ const DEFAULT_CONFIG = {
   comments: true,
   launchAtLogin: false,
   petPosition: null,
+  voiceEnabled: true,
+  voiceName: '',
+  voiceRate: 1,
+  voicePitch: 1,
+  voiceVolume: 1,
 }
 
 const PUBLIC_KEYS = [
@@ -57,6 +63,11 @@ const PUBLIC_KEYS = [
   'comments',
   'launchAtLogin',
   'petPosition',
+  'voiceEnabled',
+  'voiceName',
+  'voiceRate',
+  'voicePitch',
+  'voiceVolume',
 ]
 
 /* --------------------------------- Estado --------------------------------- */
@@ -174,6 +185,11 @@ function sanitizeConfig(next) {
       merged.petPosition && Number.isFinite(merged.petPosition.x) && Number.isFinite(merged.petPosition.y)
         ? { x: Math.round(merged.petPosition.x), y: Math.round(merged.petPosition.y) }
         : null,
+    voiceEnabled: merged.voiceEnabled !== false,
+    voiceName: String(merged.voiceName || '').slice(0, 140),
+    voiceRate: clamp(Number(merged.voiceRate) || 1, 0.5, 1.8),
+    voicePitch: clamp(Number(merged.voicePitch) || 1, 0.5, 1.6),
+    voiceVolume: clamp(Number.isFinite(Number(merged.voiceVolume)) ? Number(merged.voiceVolume) : 1, 0, 1),
   }
 }
 
@@ -219,6 +235,35 @@ function broadcast(channel, payload) {
     if (win && !win.isDestroyed() && win.webContents) {
       win.webContents.send(channel, payload)
     }
+  }
+}
+
+/* ---------------------------------- Voz ----------------------------------- */
+
+function voiceSettings() {
+  return {
+    name: config.voiceName,
+    rate: config.voiceRate,
+    pitch: config.voicePitch,
+    volume: config.voiceVolume,
+  }
+}
+
+/* La etiqueta de ánimo no se lee en voz alta. */
+function forSpeech(text) {
+  return String(text || '')
+    .replace(/^\s*\[[^\]\n]{1,24}\]\s*/, '')
+    .trim()
+}
+
+function speakReply(text) {
+  if (!config.voiceEnabled || !petWindow || !text) return
+  petWindow.webContents.send('speech:speak', { text, voice: voiceSettings() })
+}
+
+function stopSpeaking() {
+  if (petWindow && !petWindow.isDestroyed()) {
+    petWindow.webContents.send('speech:stop')
   }
 }
 
@@ -458,6 +503,17 @@ function refreshTrayMenu() {
       click: () => petWindow && petWindow.webContents.send('pet:react', 'love'),
     },
     {
+      label: 'Voz',
+      type: 'checkbox',
+      checked: config.voiceEnabled,
+      click: (item) => {
+        config.voiceEnabled = Boolean(item.checked)
+        saveConfig()
+        if (!config.voiceEnabled) stopSpeaking()
+        broadcast('config:changed', publicConfig())
+      },
+    },
+    {
       label: 'Que se eche una siesta',
       click: () => petWindow && petWindow.webContents.send('pet:sleep'),
     },
@@ -570,6 +626,8 @@ function startChat(text) {
   if (!clean) return { ok: false, error: 'Escribe algo primero.' }
   if (activeRequest) return { ok: false, error: 'Todavía estoy respondiendo a lo anterior…' }
 
+  stopSpeaking()
+
   const userMessage = { id: uid(), role: 'user', content: clean, ts: Date.now() }
   history.push(userMessage)
   trimHistory()
@@ -630,6 +688,7 @@ function startChat(text) {
         })
       }
       activeRequest = null
+      if (trimmed && !failure) speakReply(forSpeech(trimmed))
       broadcast('chat:state', { status: 'idle' })
     }
   })()
@@ -640,11 +699,13 @@ function startChat(text) {
 function stopChat() {
   if (!activeRequest) return { ok: false }
   activeRequest.controller.abort()
+  stopSpeaking()
   return { ok: true }
 }
 
 function clearChat() {
   if (activeRequest) activeRequest.controller.abort()
+  stopSpeaking()
   history = []
   persistHistory()
   broadcast('chat:cleared')
@@ -765,6 +826,7 @@ function registerIpc() {
     saveConfig()
     applyConfig()
     broadcast('config:changed', publicConfig())
+    if (!config.voiceEnabled) stopSpeaking()
     const restartRequired = previousMode !== config.windowMode
     if (restartRequired) {
       setTimeout(() => {
@@ -836,6 +898,37 @@ function registerIpc() {
       return await fs.promises.readFile(file, 'utf8')
     } catch {
       return ''
+    }
+  })
+
+  ipcMain.on('speech:stop', () => stopSpeaking())
+
+  ipcMain.on('speech:state', (event, speaking) => {
+    if (chatWindow && !chatWindow.isDestroyed()) {
+      chatWindow.webContents.send('speech:state', { speaking: Boolean(speaking) })
+    }
+  })
+
+  ipcMain.on('speech:preview', (event, payload) => {
+    if (!petWindow || petWindow.isDestroyed()) return
+    const text = String(payload?.text || '').slice(0, 300)
+    if (!text) return
+    const voice =
+      payload?.voice && typeof payload.voice === 'object' ? payload.voice : voiceSettings()
+    petWindow.webContents.send('speech:preview', { text, voice })
+  })
+
+  ipcMain.handle('asr:transcribe', async (event, payload) => {
+    const audio = typeof payload?.audio === 'string' ? payload.audio : ''
+    if (!audio) return { ok: false, message: 'No se ha grabado nada.' }
+    if (audio.length > 8_000_000) {
+      return { ok: false, message: 'La grabación es demasiado larga. Prueba con algo más corto.' }
+    }
+    try {
+      const text = await transcribe(config, audio, payload?.mime || 'audio/wav')
+      return { ok: true, text }
+    } catch (error) {
+      return { ok: false, message: error?.message || 'No se pudo transcribir el audio.' }
     }
   })
 
@@ -975,6 +1068,19 @@ if (!gotLock) {
     app.setAppUserModelId('com.carlos.michi')
     loadState()
     SOLID = detectSolidMode()
+
+    // El dictado por voz necesita el micrófono. Solo se concede a nuestras
+    // ventanas locales (file://), nunca a contenido externo.
+    const localPermissions = new Set(['media', 'audioCapture', 'videoCapture'])
+    session.defaultSession.setPermissionRequestHandler((contents, permission, callback) => {
+      const local = Boolean(contents) && String(contents.getURL() || '').startsWith('file://')
+      callback(local && localPermissions.has(permission))
+    })
+    session.defaultSession.setPermissionCheckHandler((contents, permission) => {
+      const local = Boolean(contents) && String(contents.getURL() || '').startsWith('file://')
+      return local && localPermissions.has(permission)
+    })
+
     if (app.isPackaged) {
       app.setLoginItemSettings({ openAtLogin: config.launchAtLogin, path: process.execPath })
     }
