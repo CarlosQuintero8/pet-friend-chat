@@ -1,7 +1,7 @@
 {
   "name": "michi-desktop-pet",
   "productName": "Michi",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Michi: un gato virtual para Windows que vive en tu escritorio y conversa contigo con IA.",
   "main": "main.js",
   "author": "Carlos",
