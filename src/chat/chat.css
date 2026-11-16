@@ -503,9 +503,8 @@ button {
 
 .suggestions {
   flex: 0 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 7px;
   padding: 3px 14px 9px;
 }
@@ -514,7 +513,9 @@ button {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  min-width: 0;
   padding: 6px 11px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -524,6 +525,8 @@ button {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
 
